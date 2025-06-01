@@ -1,14 +1,17 @@
 #include <cstdint>
 #include <cstddef>
 #include <vector>
-#include <array>
 
 #include "../shared.h"
 #include "../vfs/osfile.h"
 
+
+// NOTE(andrew): technically free page and overflow page are
+// also node pages, but we PAGER_NODE_PAGE to indicate
+// in-use, non-overflow pages
 typedef enum {
   PAGER_FREE_PAGE,
-  PAGER_ROOT_PAGE,
+  PAGER_FIRST_PAGE,
   PAGER_NODE_PAGE,
   PAGER_OVERFLOW_PAGE,
 } PagerPageType;
@@ -39,6 +42,7 @@ class BasePageManager {
   public:
     virtual ~BasePageManager() = default;
 
+    std::unique_ptr<OsFile> db_file_ptr_ = nullptr;
     uint32_t checksum_;
     PagerPageType page_type_;
     // TODO(andrew):
@@ -48,15 +52,19 @@ class BasePageManager {
     // 
     // PageNumber next_free_page_;
     // PageNumber next_overflow_page_;
-    std::array<std::byte, PAGE_SIZE> data_;
+    std::vector<std::byte> data_;
+
+    void set_data(std::vector<std::byte> buffer, size_t num_bytes);
 };
 
 class FirstPageManager: public BasePageManager {
   public:
-    FirstPageManager(PageNumber page_num, std::unique_ptr<OsFile> db_file_ptr);
+    FirstPageManager(std::unique_ptr<OsFile> db_file_ptr);
     ~FirstPageManager();
 
     uint64_t num_pages_;
+
+    void set_num_pages(uint64_t num_pages);
 };
 
 class NodePageManager: public BasePageManager {
@@ -83,4 +91,5 @@ class Pager {
   // use VFS and write + flush page to filesys
   //
   // https://medium.com/technology-in-essence/how-sqlite-database-works-b10ac80e4f07
+
 };

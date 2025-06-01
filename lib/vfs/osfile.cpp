@@ -1,6 +1,5 @@
 #include "osfile.h"
 #include "../shared.h"
-#include <array>
 #include <cstddef>
 #include <sys/fcntl.h>
 #include <stdio.h>
@@ -18,41 +17,36 @@ OsFile::~OsFile() {
     close(fd_);
 }
 
-/**
- * @brief 
- * 
- * @param page_number Page number offset to read from
- * @param page_content Array of bytes to write data into
- * @return true: if reading from DB file was successful
- * @return false: if reading from DB file failed
- */
-bool OsFile::read_page(PageNumber page_number, std::array<std::byte, PAGE_SIZE> page_content) {
+bool OsFile::os_seek(off_t offset) {
   if (fd_ == -1) {
-    perror("[VFS/Read]: Unable to open DB file");
+    perror("[VFS/Seek]: Unable to seek in DB file");
     return false;
   }
 
-  off_t file_offset = PAGE_SIZE * page_number;
-  ssize_t bytes_read = pread(fd_, page_content.data(), PAGE_SIZE, file_offset);
-  if (bytes_read == -1) {
-    perror("[VFS/Read]: Error reading bytes from DB file");
+  off_t bytes_offset = lseek(fd_, offset, SEEK_SET);
+  if (bytes_offset == -1) {
+    perror("[VFS/Seek]: Error seeking in DB file");
     return false;
   }
   return true;
 }
 
-/**
- * @brief 
- * 
- * @param page_number Page number offset to write at disk
- * @param bytes_to_write Byte content to write to file
- * @param num_bytes Number of bytes to write
- * @return true: if writing to the DB file was successful
- * @return false: if failed writing to the DB file
- */
-bool OsFile::write_page(
-  PageNumber page_number,
-  std::array<std::byte, PAGE_SIZE> bytes_to_write,
+ssize_t OsFile::os_read(std::vector<std::byte> buffer, size_t num_bytes) {
+  if (fd_ == -1) {
+    perror("[VFS/Read]: Unable to open DB file");
+    return -1;
+  }
+
+  ssize_t bytes_read = read(fd_, buffer.data(), num_bytes);
+  if (bytes_read == -1) {
+    perror("[VFS/Read]: Error reading bytes from DB file");
+    return -1;
+  }
+  return bytes_read;
+}
+
+bool OsFile::os_write(
+  std::vector<std::byte> bytes_to_write,
   size_t num_bytes
 ) {
   if (fd_ == -1) {
@@ -60,11 +54,17 @@ bool OsFile::write_page(
     return false;
   }
 
-  off_t file_offset = PAGE_SIZE * page_number;
-  ssize_t bytes_written = pwrite(fd_, bytes_to_write.data(), num_bytes, file_offset);
+  ssize_t bytes_written = write(fd_, bytes_to_write.data(), num_bytes);
   if (bytes_written != num_bytes) {
     fprintf(stderr, "[VFS/Write]: Failed to write %zu bytes (wrote %zd)\n", num_bytes, bytes_written);
     return false;
   }
   return true;
+}
+
+void OsFile::os_flush() {
+  if (fsync(fd_) == -1) {
+    perror("[VFS/Flush]: Error flushing DB file");
+  }
+  close(fd_);
 }

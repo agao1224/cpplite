@@ -1,4 +1,5 @@
 #include <string>
+#include <vector>
 #include "../shared.h"
 
 class OsFile {
@@ -6,9 +7,10 @@ class OsFile {
     OsFile(const std::string& path);
     ~OsFile();
 
-    bool read_page(PageNumber page_number, std::array<std::byte, PAGE_SIZE> page_content);
-    bool write_page(PageNumber page_number, std::array<std::byte, PAGE_SIZE> bytes_to_write, size_t num_bytes);
-    void flush();
+    bool os_seek(off_t offset);
+    ssize_t os_read(std::vector<std::byte> buffer, size_t num_bytes);
+    bool os_write(std::vector<std::byte> buffer, size_t num_bytes);
+    void os_flush();
 
   private:
     int fd_;
