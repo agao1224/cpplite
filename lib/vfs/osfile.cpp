@@ -4,12 +4,15 @@
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <iostream>
 
 
 OsFile::OsFile(const std::string& path) {
   fd_ = open(path.c_str(), O_RDWR | O_CREAT, 0644);
   if (fd_ == -1)
     perror("[VFS/New]: Failed to open DB file");
+  else
+    filename_ = path;
 }
 
 OsFile::~OsFile() {
@@ -31,13 +34,14 @@ bool OsFile::os_seek(off_t offset) {
   return true;
 }
 
-ssize_t OsFile::os_read(std::vector<std::byte> buffer, size_t num_bytes) {
+ssize_t OsFile::os_read(std::vector<std::byte>& buffer, size_t num_bytes) {
   if (fd_ == -1) {
     perror("[VFS/Read]: Unable to open DB file");
     return -1;
   }
 
   ssize_t bytes_read = read(fd_, buffer.data(), num_bytes);
+  std::cout << "bytes read: " << bytes_read << std::endl;
   if (bytes_read == -1) {
     perror("[VFS/Read]: Error reading bytes from DB file");
     return -1;
@@ -57,6 +61,46 @@ bool OsFile::os_write(
   ssize_t bytes_written = write(fd_, bytes_to_write.data(), num_bytes);
   if (bytes_written != num_bytes) {
     fprintf(stderr, "[VFS/Write]: Failed to write %zu bytes (wrote %zd)\n", num_bytes, bytes_written);
+    return false;
+  }
+  return true;
+}
+
+bool OsFile::os_append(std::vector<std::byte> payload, size_t num_bytes) {
+  if (fd_ == -1) {
+    perror("[VFS/Append]: Invalid file descriptor");
+    return false;
+  }
+
+  if (lseek(fd_, 0, SEEK_END) == -1) {
+    perror("[VFS/Append]: Failed to seek to end");
+    return false;
+  }
+
+  if (num_bytes > payload.size())
+    payload.insert(payload.end(), num_bytes - payload.size(), std::byte{0});
+
+  ssize_t bytes_written = write(fd_, payload.data(), num_bytes);
+  if (bytes_written != static_cast<ssize_t>(num_bytes)) {
+    fprintf(stderr, "[VFS/Append]: Failed to write %zu bytes (wrote %zd)\n", num_bytes, bytes_written);
+    return false;
+  }
+
+  return true;
+}
+
+void OsFile::os_close() {
+  if (fd_ == -1) {
+    perror("[VFS/Append]: Invalid file descriptor");
+    return;
+  }
+  close(fd_);
+}
+
+bool OsFile::os_open() {
+  fd_ = open(filename_.c_str(), O_RDWR, 0644);
+  if (fd_ == -1) {
+    perror("[VFS/New]: Failed to open DB file");
     return false;
   }
   return true;

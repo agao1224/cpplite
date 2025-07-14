@@ -4,6 +4,16 @@ parser:
 lexer:
 	flex -o lib/lex.yy.c lib/lex.y
 
+test:
+	cmake -S . -B build
+	cmake --build build
+	ctest --test-dir build
+
+test_verbose:
+	cmake -S . -B build
+	cmake --build build
+	ctest --test-dir build --output-on-failure
+
 all:
 	$(MAKE) parser
 	$(MAKE) lexer

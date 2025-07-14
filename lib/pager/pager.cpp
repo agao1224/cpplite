@@ -1,133 +1,110 @@
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
 #include <memory>
-#include <stdexcept>
-#include <cstddef>
 #include <cassert>
 
 #include "pager.h"
 
+void Pager::open(std::string db_filename) {
+  std::shared_ptr<OsFile> db_file_ptr = std::make_shared<OsFile>(db_filename);
+  db_file_ptr_ = std::move(db_file_ptr);
 
-void BasePageManager::set_data(std::vector<std::byte> buffer, size_t num_bytes) {
-  if (db_file_ptr_ == nullptr)
-    throw std::runtime_error("[BasePageManager]: db_file_ptr_ is NULL");
+  curr_page_num_ = 1;
+  page_manager_ = FirstPageManager(db_file_ptr_);
+}
+
+void Pager::seek_page(PageNumber page_num) {
+  if (page_num == curr_page_num_)
+    return;
+
+  if (page_num == 1)
+    page_manager_ = FirstPageManager(db_file_ptr_);  
+  else
+    page_manager_ = NodePageManager(page_num, db_file_ptr_);
+}
+
+PageNumber Pager::create_free_page() {
+  assert(db_file_ptr_ != nullptr);
 
   OsFile db_file = *db_file_ptr_;
-  size_t data_offset;
+  FirstPageManager fp_manager(std::move(db_file_ptr_)); 
+  
+  total_num_pages_++;
 
-  if (page_type_ == PAGER_FIRST_PAGE) {
-    data_offset = sizeof(PagerFirstPageHeader_t);
-  } else {
-    assert(page_type_ == PAGER_FREE_PAGE ||
-           page_type_ == PAGER_NODE_PAGE || 
-           page_type_ == PAGER_OVERFLOW_PAGE);
-    data_offset = sizeof(PagerNodePageHeader_t);
-  }
+  PageNumber new_free_pgno = total_num_pages_;
+  PageNumber old_free_page_head = fp_manager.get_free_page_head();
+  PagerFreePageHeader_t free_page_header = PagerFreePageHeader(
+    CHECKSUM,
+    PAGER_FREE_PAGE,
+    old_free_page_head
+  );
 
-  bool write_ok = db_file.os_write(buffer, num_bytes);
-  if (!write_ok) {
-    char errmsg[255];
-    const char* page_manager = (page_type_ == PAGER_FIRST_PAGE) ? "FirstPageManager" : "NodePageManager";
-    snprintf(errmsg, 255, "[%s]: Failed to write data", page_manager);
-    throw std::runtime_error(errmsg);
-  }
+  db_file.os_append(free_page_header.to_bytes(), PAGE_SIZE);
+  fp_manager.set_free_page_head(new_free_pgno);
+
+  return new_free_pgno;
 }
 
-FirstPageManager::FirstPageManager(std::unique_ptr<OsFile> db_file_ptr) {
-  std::vector<std::byte> page_content;
+PageNumber Pager::create_overflow_page(
+  std::vector<std::byte> payload
+) {
+  assert(db_file_ptr_ != nullptr);
 
-  if (db_file_ptr == nullptr)
-    throw std::runtime_error("[FirstPageManager]: db_file_ptr is NULL");
-
-  OsFile db_file = *db_file_ptr;
-  ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
-  if (bytes_read == -1)
-    throw std::runtime_error("[FirstPageManager]: Failed to read page");
-
-  PagerFirstPageHeader_t first_page_header;
-  std::memcpy(&first_page_header, page_content.data(), sizeof(PagerFirstPageHeader_t));
-
-  db_file_ptr_ = std::move(db_file_ptr);
-  checksum_ = first_page_header.checksum;
-  int32_t data_bytes = (static_cast<int32_t>(sizeof(page_content))
-   - static_cast<int32_t>(sizeof(first_page_header)));
-
-  if (checksum_ == CHECKSUM && data_bytes >= 0) {
-    page_type_ = first_page_header.page_type;
-    num_pages_ = first_page_header.num_pages;
-
-    std::memcpy(data_.data(),
-      page_content.data() + sizeof(PagerFirstPageHeader_t),
-      static_cast<size_t>(data_bytes)
-    );
-  } else {
-    // NOTE(andrew): If checksum invalid or malformed first page header,
-    // we reinitialize header and write to disk
-    first_page_header.checksum = checksum_ = CHECKSUM;
-    first_page_header.page_type = page_type_ = PAGER_FIRST_PAGE;
-    first_page_header.num_pages = num_pages_ = 1;
-
-    std::byte* first_page_header_ptr = reinterpret_cast<std::byte*>(&first_page_header);
-    std::vector<std::byte> buffer(first_page_header_ptr, first_page_header_ptr + sizeof(first_page_header));
-    db_file.os_write(buffer, sizeof(buffer));
-  }
-}
-
-FirstPageManager::~FirstPageManager() = default;
-
-void FirstPageManager::set_num_pages(uint64_t new_num_pages) {
-  num_pages_ = new_num_pages;
-  
-  if (db_file_ptr_ == nullptr)
-    throw std::runtime_error("[FirstPageManager]: db_file_ptr_ is NULL");
-  
   OsFile db_file = *db_file_ptr_;
-  off_t num_pages_offset = offsetof(PagerFirstPageHeader_t, num_pages);
-  std::vector<std::byte> buffer(sizeof(uint64_t));
+  total_num_pages_++;
 
-  std::memcpy(buffer.data(), &new_num_pages, sizeof(uint64_t));
+  PageNumber new_pgno = total_num_pages_;
+  PagerOverflowPageHeader_t overflow_page_header = PagerOverflowPageHeader(
+    CHECKSUM,
+    PAGER_OVERFLOW_PAGE,
+    0
+  );
 
-  bool seek_ok = db_file.os_seek(num_pages_offset);
-  if (!seek_ok)
-    throw std::runtime_error("[FirstPageManager]: Failed to seek set_num_pages");
-  bool write_ok = db_file.os_write(buffer, sizeof(uint64_t));
-  if (!write_ok)
-    throw std::runtime_error("FirstPageManager]: Failed to write set_num_pages");
+  std::vector<std::byte> overflow_page_data = overflow_page_header.to_bytes();
+  overflow_page_data.insert(
+    overflow_page_data.begin(),
+    payload.begin(),
+    payload.end()
+  );
+
+  db_file.os_append(overflow_page_data, PAGE_SIZE);
+  return new_pgno;
 }
 
-NodePageManager::NodePageManager(PageNumber page_num, std::unique_ptr<OsFile> db_file_ptr) {
-  std::vector<std::byte> page_content;
+PageNumber Pager::create_node_page() {
+  assert (db_file_ptr_ != nullptr);
 
-  if (db_file_ptr == nullptr)
-    throw std::runtime_error("[NodePageManager]: db_file_ptr is NULL");
+  OsFile db_file = *db_file_ptr_;
 
-  OsFile db_file = *db_file_ptr;
-  ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
-  if (bytes_read == -1)
-    throw std::runtime_error("[NodePageManager]: Failed to read page");
+  PageNumber new_pgno = total_num_pages_ + 1;
+  PagerNodePageHeader_t node_page_header = PagerNodePageHeader(
+    CHECKSUM,
+    PAGER_NODE_PAGE
+  );
 
-  PagerNodePageHeader_t node_page_header;
-  std::memcpy(&node_page_header, page_content.data(), sizeof(PagerNodePageHeader_t));
-
-  db_file_ptr_ = std::move(db_file_ptr);
-  checksum_ = node_page_header.checksum;
-  int32_t data_bytes = (static_cast<int32_t>(sizeof(page_content))
-    - static_cast<int32_t>(sizeof(node_page_header)));
-
-  if (checksum_ == CHECKSUM && data_bytes >= 0) {
-    page_type_ = node_page_header.page_type;
-    std::memcpy(data_.data(),
-                page_content.data() + sizeof(PagerNodePageHeader_t),
-                static_cast<size_t>(data_bytes));
-  } else {
-    node_page_header.checksum = checksum_ = CHECKSUM;
-    node_page_header.page_type = page_type_ = PAGER_NODE_PAGE;
-
-    std::byte* node_page_header_ptr = reinterpret_cast<std::byte*>(&node_page_header);
-    std::vector<std::byte> buffer(node_page_header_ptr, node_page_header_ptr + sizeof(node_page_header));
-    db_file.os_write(buffer, sizeof(buffer));
-  }
+  db_file.os_append(node_page_header.to_bytes(), PAGE_SIZE);
+  total_num_pages_ = new_pgno;
+  return new_pgno;
 }
 
-NodePageManager::~NodePageManager() = default;
+void Pager::write_data(std::vector<std::byte> buffer) {
+  // NOTE(andrew): we don't check if db_file_ptr_ is null
+  // since page_manager_ptr_ has ownership
+  assert(1 <= curr_page_num_ && curr_page_num_ <= total_num_pages_ &&
+         page_open_);
+
+  auto& page_manager = page_manager_;
+  page_manager.set_data(buffer, sizeof(buffer), curr_page_num_);
+}
+
+// NOTE(andrew): not sure if this is safe, have to look
+// into how resource ownership works in cpp
+void Pager::set_num_pages(PageNumber new_num_pages) {
+  assert(page_open_);
+
+  FirstPageManager tmp_manager(db_file_ptr_);
+  tmp_manager.set_num_pages(new_num_pages);
+
+  if (curr_page_num_ == 1)
+    page_manager_ = FirstPageManager(db_file_ptr_);
+  else
+    page_manager_ = NodePageManager(curr_page_num_, db_file_ptr_);
+}
