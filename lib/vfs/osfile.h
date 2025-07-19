@@ -1,6 +1,6 @@
 #include <string>
 #include <vector>
-#include "../shared.h"
+#include "shared.h"
 
 class OsFile {
   public:

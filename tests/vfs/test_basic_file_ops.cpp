@@ -5,8 +5,8 @@
 
 #include <gtest/gtest.h>
 
-#include "../../lib/vfs/osfile.h"
-#include "../test_utils.cpp"
+#include "vfs/osfile.h"
+#include "test_utils.cpp"
 
 class VfsTestConstants {
 public:

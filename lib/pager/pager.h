@@ -2,8 +2,8 @@
 #include <cstddef>
 #include <vector> 
 
-#include "../shared.h"
-#include "../vfs/osfile.h"
+#include "shared.h"
+#include "vfs/osfile.h"
 
 // NOTE(andrew): technically free page and overflow page are 
 // also node pages, but we PAGER_NODE_PAGE to indicate

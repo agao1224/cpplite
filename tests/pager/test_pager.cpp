@@ -4,8 +4,8 @@
 #include <fstream>
 
 #include <gtest/gtest.h>
-#include "../../lib/pager/pager.h"
-#include "../test_utils.cpp"
+#include "pager/pager.h"
+#include "test_utils.cpp"
 
 TEST(PagerTest, InitPager) {
   const std::string test_db_filename = generate_random_filename();
