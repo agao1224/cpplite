@@ -30,6 +30,3 @@ TEST(PagerTest, InitPager) {
   ASSERT_EQ(first_page_header.checksum, CHECKSUM);
   ASSERT_EQ(first_page_header.num_pages, 1);
 }
-
-TEST(PagerTest, )
-
