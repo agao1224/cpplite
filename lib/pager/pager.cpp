@@ -1,24 +1,31 @@
 #include <memory>
 #include <cassert>
+#include <iostream>
 
 #include "pager.h"
 
-void Pager::open(std::string db_filename) {
-  std::shared_ptr<OsFile> db_file_ptr = std::make_shared<OsFile>(db_filename);
-  db_file_ptr_ = std::move(db_file_ptr);
+Pager::Pager(std::string db_filename) {
+  PagerFirstPageHeader_t first_page_header(
+    CHECKSUM,
+    PAGER_FIRST_PAGE,
+    1,
+    0
+  );
 
-  curr_page_num_ = 1;
-  page_manager_ = FirstPageManager(db_file_ptr_);
-}
+  std::vector<std::byte> first_page_content(sizeof(PagerFirstPageHeader_t));
+  std::memcpy(
+    first_page_content.data(),
+    &first_page_header,
+    sizeof(PagerFirstPageHeader_t)
+  );
 
-void Pager::seek_page(PageNumber page_num) {
-  if (page_num == curr_page_num_)
-    return;
-
-  if (page_num == 1)
-    page_manager_ = FirstPageManager(db_file_ptr_);  
-  else
-    page_manager_ = NodePageManager(page_num, db_file_ptr_);
+  OsFile os_file(db_filename);
+  os_file.os_seek(0);
+  os_file.os_write(
+    first_page_content,
+    PAGE_SIZE
+  );
+  os_file.os_close();
 }
 
 PageNumber Pager::create_free_page() {

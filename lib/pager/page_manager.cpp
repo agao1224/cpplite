@@ -49,6 +49,9 @@ FirstPageManager::FirstPageManager(std::shared_ptr<OsFile> db_file_ptr) {
   if (bytes_read == -1)
     throw std::runtime_error("[FirstPageManager]: Failed to read page");
 
+  // TODO(andrew): strongly considering adding additional constructor
+  // with no args. bad practice to have magic numbers and initializing like
+  // this
   PagerFirstPageHeader_t first_page_header(
     0,
     PAGER_FIRST_PAGE,

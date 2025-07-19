@@ -17,6 +17,8 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 
 file(GLOB VFS_TEST_SOURCES tests/vfs/*.cpp)
+file(GLOB PAGER_TEST_SOURCES tests/pager/*.cpp)
+
 add_executable(
   vfs_tests
   tests/test_main.cpp
@@ -24,11 +26,27 @@ add_executable(
   lib/vfs/osfile.h
   lib/vfs/osfile.cpp
 )
+add_executable(
+  pager_tests
+  tests/test_main.cpp
+  ${PAGER_TEST_SOURCES}
+  lib/vfs/osfile.h
+  lib/vfs/osfile.cpp
+  lib/pager/pager.h
+  lib/pager/pager.cpp
+  lib/pager/page_manager.cpp
+)
 
 target_link_libraries(
   vfs_tests
   GTest::gtest
 )
 
+target_link_libraries(
+  pager_tests
+  GTest::gtest
+)
+
 include(GoogleTest)
 gtest_discover_tests(vfs_tests)
+gtest_discover_tests(pager_tests)

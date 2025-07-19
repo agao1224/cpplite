@@ -111,7 +111,15 @@ typedef struct PagerFirstPageHeader : public PagerBasePageHeader {
 
   PagerFirstPageHeader(uint32_t checksum_, PagerPageType page_type_, uint64_t num_pages_, PageNumber free_page_head_) :
     PagerBasePageHeader(checksum_, page_type_), num_pages(num_pages_), free_page_head(free_page_head_) {}
-  
+
+  PagerFirstPageHeader(std::vector<std::byte> payload)
+    : PagerBasePageHeader(0, PAGER_FIRST_PAGE) // NOTE(andrew): tmp values, overwritten by memcpy
+  {
+    if (payload.size() < sizeof(PagerFirstPageHeader))
+      throw std::runtime_error("[PagerFirstPageHeader] Payload too small");
+    std::memcpy(static_cast<void*>(this), payload.data(), sizeof(PagerFirstPageHeader));
+  }
+
   std::vector<std::byte> to_bytes() const {
     std::vector<std::byte> buffer(sizeof(*this));
     std::memcpy(buffer.data(), static_cast<const void*>(this), sizeof(*this));
@@ -174,7 +182,7 @@ class Pager {
 
   public:
   // https://medium.com/technology-in-essence/how-sqlite-database-works-b10ac80e4f07
-    Pager() = default;
+    Pager(std::string db_filename);
     ~Pager() = default;
 
     void open(std::string db_filename);
