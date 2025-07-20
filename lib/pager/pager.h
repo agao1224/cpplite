@@ -187,7 +187,7 @@ class FirstPageManager: public BasePageManager {
     ~FirstPageManager();
 
     uint64_t num_pages_;
-    PageNumber free_page_head_;
+    PageNumber free_page_head_ = NULL_PAGE;
 
     void set_num_pages(uint64_t num_pages);
     void set_free_page_head(PageNumber pgno);

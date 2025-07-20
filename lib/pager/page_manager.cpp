@@ -95,7 +95,7 @@ void FirstPageManager::set_num_pages(uint64_t new_num_pages) {
   std::vector<std::byte> buffer(sizeof(uint64_t));
 
   std::memcpy(buffer.data(), &new_num_pages, sizeof(uint64_t));
-  
+
   bool seek_ok = db_file.os_seek(num_pages_offset);
   if (!seek_ok)
     throw std::runtime_error("[FirstPageManager]: Failed to seek set_num_pages");
@@ -139,7 +139,11 @@ NodePageManager::NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
   OsFile db_file = *db_file_ptr;
   db_file.os_open();
-  db_file.os_seek((pgno-1)*PAGE_SIZE);
+  
+  bool seek_ok = db_file.os_seek((pgno-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[NodePageManager]: Failed to seek");
+
   ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
   if (bytes_read == -1)
@@ -182,7 +186,10 @@ FreePageManager::FreePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
   std::vector<std::byte> page_content(PAGE_SIZE);
   OsFile db_file = *db_file_ptr;
   db_file.os_open();
-  db_file.os_seek((pgno-1) * PAGE_SIZE);
+  bool seek_ok = db_file.os_seek((pgno-1) * PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[FreePageManager]: Failed to seek");
+
   ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
   if (bytes_read == -1)
@@ -205,6 +212,29 @@ FreePageManager::FreePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
 FreePageManager::~FreePageManager() = default;
 
+PageNumber FreePageManager::get_next_free_page() {
+  return next_free_page_;
+}
+
+void FreePageManager::set_next_free_page(PageNumber pgno) {
+  assert(db_file_ptr_ != nullptr);
+  next_free_page_ = pgno;
+
+  off_t next_free_page_offset = offsetof(PagerFreePageHeader_t, next_free_page);
+  std::vector<std::byte> buffer(sizeof(PageNumber));
+
+  std::memcpy(buffer.data(), &pgno, sizeof(PageNumber));
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+  bool seek_ok = db_file.os_seek((pgno-1)*PAGE_SIZE + next_free_page_offset);
+  if (!seek_ok)
+    throw std::runtime_error("[FreePageManager]: Failed to seek set_next_free_page");
+  bool write_ok = db_file.os_write(buffer, sizeof(PageNumber));
+  if (!write_ok)
+    throw std::runtime_error("[FreePageManager]: Failed to write set_next_free_page");
+  db_file.os_close();
+}
+
 OverflowPageManager::OverflowPageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr) {
   if (db_file_ptr != nullptr)
     throw std::runtime_error("[OverflowPageManager]: db_file_ptr is NULL");
@@ -213,7 +243,9 @@ OverflowPageManager::OverflowPageManager(PageNumber pgno, std::shared_ptr<OsFile
 
   std::vector<std::byte> page_content(PAGE_SIZE);
   OsFile db_file = *db_file_ptr;
-  db_file.os_seek((pgno-1) * PAGE_SIZE);
+  bool seek_ok = db_file.os_seek((pgno-1) * PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[OverflowPageManager]: Failed to seek");
   ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
   if (bytes_read == -1)

@@ -3,6 +3,7 @@
 #include <stdexcept>
 
 #include "pager.h"
+#include "shared.h"
 
 Pager::Pager(std::string db_filename) {
   PagerFirstPageHeader_t first_page_header(
@@ -23,7 +24,10 @@ Pager::Pager(std::string db_filename) {
 
   OsFile os_file = *db_file_ptr_;
   os_file.os_open();
-  os_file.os_seek(0);
+  bool seek_ok = os_file.os_seek(0);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager:Pager]: Failed to seek");
+
   os_file.os_write(
     first_page_content,
     PAGE_SIZE
@@ -43,7 +47,10 @@ void Pager::seek_page(PageNumber pgno) {
   std::vector<std::byte> page_content(PAGE_SIZE);
   OsFile db_file = *db_file_ptr_;
   db_file.os_open();
-  db_file.os_seek((pgno-1)*PAGE_SIZE);
+  bool seek_ok = db_file.os_seek((pgno-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager:seek_page]: Failed to seek");
+
   db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
 
@@ -124,13 +131,45 @@ PageNumber Pager::create_overflow_page(
   return new_pgno;
 }
 
+void Pager::insert_freelist(PageNumber pgno) {
+  assert(db_file_ptr_ != nullptr);
+
+  FirstPageManager fpm(db_file_ptr_);
+  PageNumber curr_free_head = fpm.get_free_page_head();
+
+  std::vector<std::byte> free_page_content(PAGE_SIZE);
+  PagerFreePageHeader_t free_page_header(
+    CHECKSUM,
+    PAGER_FREE_PAGE,
+    curr_free_head
+  );
+  std::memcpy(
+    free_page_content.data(),
+    free_page_header.to_bytes().data(),
+    free_page_header.to_bytes().size()
+  );
+  fpm.set_free_page_head(pgno);
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+  bool seek_ok = db_file.os_seek((pgno-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager:insert_freelist]: Failed to seek");
+
+  db_file.os_write(free_page_content, PAGE_SIZE);
+  db_file.os_close();
+}
+
 PageNumber Pager::get_free_page_head() {
   assert(db_file_ptr_ != nullptr);
 
   std::vector<std::byte> first_page_content(PAGE_SIZE);
   OsFile db_file = *db_file_ptr_;
   db_file.os_open();
-  db_file.os_seek(0);
+  bool seek_ok = db_file.os_seek(0);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager:get_free_page_head]: Failed to seek");
+
   db_file.os_read(first_page_content, PAGE_SIZE);
   db_file.os_close();
 

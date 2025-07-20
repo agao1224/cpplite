@@ -88,16 +88,12 @@ TEST(PagerTest, FreePageListTraversal) {
       pager.create_node_page();
   }
 
-  // TODO(andrew):
-  // create functions for managing page freelist in Pager, then
-  // complete freelist traversal test
-  //
-  // PageNumber free_page_head = pager.get_free_page_head();
-  // size_t counted_free_pages = 0;
-  // while (free_page_head != NULL_PAGE) {
-  //   pager.seek_page(free_page_head);
-  //   ASSERT_TRUE(pager.page_manager_.has_value());
-  //   FreePageManager fpm = std::get<FreePageManager>(pager.page_manager_.value());
-  //   free_page_head = fpm.get_next_free_page();
-  // }
+  PageNumber free_page_head = pager.get_free_page_head();
+  size_t counted_free_pages = 0;
+  while (free_page_head != NULL_PAGE) {
+    pager.seek_page(free_page_head);
+    ASSERT_TRUE(pager.page_manager_.has_value());
+    FreePageManager fpm = std::get<FreePageManager>(pager.page_manager_.value());
+    free_page_head = fpm.get_next_free_page();
+  }
 }
