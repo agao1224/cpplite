@@ -41,7 +41,6 @@ ssize_t OsFile::os_read(std::vector<std::byte>& buffer, size_t num_bytes) {
   }
 
   ssize_t bytes_read = read(fd_, buffer.data(), num_bytes);
-  std::cout << "bytes read: " << bytes_read << std::endl;
   if (bytes_read == -1) {
     perror("[VFS/Read]: Error reading bytes from DB file");
     return -1;
@@ -90,7 +89,6 @@ bool OsFile::os_append(std::vector<std::byte> payload, size_t num_bytes) {
 }
 
 void OsFile::os_close() {
-  std::cout << "close" << std::endl;
   if (fd_ == -1) {
     perror("[VFS/Append]: Invalid file descriptor");
     return;
@@ -99,7 +97,6 @@ void OsFile::os_close() {
 }
 
 bool OsFile::os_open() {
-  std::cout << "open" << std::endl;
   fd_ = open(filename_.c_str(), O_RDWR, 0644);
   if (fd_ == -1) {
     perror("[VFS/New]: Failed to open DB file");

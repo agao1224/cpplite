@@ -88,12 +88,44 @@ TEST(PagerTest, FreePageListTraversal) {
       pager.create_node_page();
   }
 
-  PageNumber free_page_head = pager.get_free_page_head();
+  PageNumber free_page_head = pager.peek_freelist();
   size_t counted_free_pages = 0;
   while (free_page_head != NULL_PAGE) {
     pager.seek_page(free_page_head);
     ASSERT_TRUE(pager.page_manager_.has_value());
     FreePageManager fpm = std::get<FreePageManager>(pager.page_manager_.value());
     free_page_head = fpm.get_next_free_page();
+    counted_free_pages++;
   }
+  ASSERT_EQ(counted_free_pages, num_free_pages);
+}
+
+TEST(PagerTest, FreePageListRemoval) {
+  const std::string test_db_filename = generate_random_filename();
+  Pager pager(test_db_filename);
+
+  for (int i = 0; i < 500; i++) {
+    pager.create_node_page();
+  }
+
+  std::vector<PageNumber> free_pages = {
+    2, 5, 10, 325, 499
+  };
+
+  for (int i = 0; i < free_pages.size(); i++) {
+    pager.insert_freelist(free_pages[i]);
+  }
+
+  ASSERT_EQ(pager.peek_freelist(), 499);
+
+  for (int i = free_pages.size()-1; i >= 0; i--) {
+    ASSERT_EQ(pager.pop_freelist(), free_pages[i]);
+  }
+  ASSERT_EQ(pager.pop_freelist(), NULL_PAGE);
+
+  pager.insert_freelist(499);
+  pager.insert_freelist(485);
+  ASSERT_EQ(pager.pop_freelist(), 485);
+  pager.insert_freelist(99);
+  ASSERT_EQ(pager.peek_freelist(), 99);
 }

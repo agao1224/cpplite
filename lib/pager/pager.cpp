@@ -1,6 +1,7 @@
 #include <memory>
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 #include "pager.h"
 #include "shared.h"
@@ -133,6 +134,7 @@ PageNumber Pager::create_overflow_page(
 
 void Pager::insert_freelist(PageNumber pgno) {
   assert(db_file_ptr_ != nullptr);
+  assert(pgno != 1);
 
   FirstPageManager fpm(db_file_ptr_);
   PageNumber curr_free_head = fpm.get_free_page_head();
@@ -160,7 +162,7 @@ void Pager::insert_freelist(PageNumber pgno) {
   db_file.os_close();
 }
 
-PageNumber Pager::get_free_page_head() {
+PageNumber Pager::pop_freelist() {
   assert(db_file_ptr_ != nullptr);
 
   std::vector<std::byte> first_page_content(PAGE_SIZE);
@@ -168,7 +170,41 @@ PageNumber Pager::get_free_page_head() {
   db_file.os_open();
   bool seek_ok = db_file.os_seek(0);
   if (!seek_ok)
-    throw std::runtime_error("[Pager:get_free_page_head]: Failed to seek");
+    throw std::runtime_error("[Pager:pop_freelist]: Failed to seek first page");
+
+  db_file.os_read(first_page_content, PAGE_SIZE);
+  db_file.os_close();
+
+  FirstPageManager fpm(db_file_ptr_);
+  PageNumber free_head_pgno = fpm.get_free_page_head();
+  if (free_head_pgno == NULL_PAGE)
+    return NULL_PAGE;
+
+  std::vector<std::byte> free_page_content(PAGE_SIZE);
+
+  db_file.os_open();
+  seek_ok = db_file.os_seek((free_head_pgno-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager:pop_freelist]: Failed to seek freelist head");
+
+  db_file.os_read(free_page_content, PAGE_SIZE);
+  db_file.os_close();
+
+  PagerFreePageHeader_t free_page_header(free_page_content);
+  fpm.set_free_page_head(free_page_header.next_free_page);
+
+  return free_head_pgno;
+}
+
+PageNumber Pager::peek_freelist() {
+  assert(db_file_ptr_ != nullptr);
+
+  std::vector<std::byte> first_page_content(PAGE_SIZE);
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+  bool seek_ok = db_file.os_seek(0);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager:peek_freelist]: Failed to seek");
 
   db_file.os_read(first_page_content, PAGE_SIZE);
   db_file.os_close();

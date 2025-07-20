@@ -265,5 +265,6 @@ class Pager {
 
     // Page freelist
     void insert_freelist(PageNumber pgno);
-    PageNumber get_free_page_head();
+    PageNumber pop_freelist();
+    PageNumber peek_freelist();
 };
