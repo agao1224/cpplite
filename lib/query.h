@@ -1,3 +1,5 @@
+#pragma once
+
 typedef enum {
   SYSTEM_QUIT,
   CREATE_TABLE,

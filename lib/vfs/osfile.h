@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
-#include "shared.h"
+
+#pragma once
 
 class OsFile {
   public:

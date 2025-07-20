@@ -1,11 +1,12 @@
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <chrono>
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
-#include <gtest/gtest.h>
+
+#include "test_utils.h"
 
 std::string generate_random_filename() {
   std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
@@ -58,4 +59,17 @@ bool check_file_bytes(
   }
   infile.close();
   return true;
+}
+
+std::vector<std::byte> get_file_bytes(const std::string filename) {
+  size_t file_size = std::filesystem::file_size(filename);
+  std::ifstream file(filename, std::ios::binary);
+  if (!file) throw std::runtime_error("Failed to open file");
+
+  std::vector<std::byte> payload(file_size);
+  file.read(reinterpret_cast<char*>(payload.data()), file_size);
+
+  if (!file) throw std::runtime_error("Failed to read entire file");
+
+  return payload;
 }

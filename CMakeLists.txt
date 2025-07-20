@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(my_project)
+project(cpplite)
 
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/tests)
@@ -26,13 +26,18 @@ add_executable(
   vfs_tests
   tests/test_main.cpp
   ${VFS_TEST_SOURCES}
+  tests/test_utils.h
+  tests/test_utils.cpp
   lib/vfs/osfile.h
   lib/vfs/osfile.cpp
 )
+
 add_executable(
   pager_tests
   tests/test_main.cpp
   ${PAGER_TEST_SOURCES}
+  tests/test_utils.h
+  tests/test_utils.cpp
   lib/vfs/osfile.h
   lib/vfs/osfile.cpp
   lib/pager/pager.h

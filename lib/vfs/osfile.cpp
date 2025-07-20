@@ -90,6 +90,7 @@ bool OsFile::os_append(std::vector<std::byte> payload, size_t num_bytes) {
 }
 
 void OsFile::os_close() {
+  std::cout << "close" << std::endl;
   if (fd_ == -1) {
     perror("[VFS/Append]: Invalid file descriptor");
     return;
@@ -98,6 +99,7 @@ void OsFile::os_close() {
 }
 
 bool OsFile::os_open() {
+  std::cout << "open" << std::endl;
   fd_ = open(filename_.c_str(), O_RDWR, 0644);
   if (fd_ == -1) {
     perror("[VFS/New]: Failed to open DB file");
