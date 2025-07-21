@@ -253,11 +253,9 @@ class Pager {
 
     void seek_page(PageNumber pgno);
 
-    // TODO(andrew): consolidate this all into a single method
-    // with overloads in order to create different types of pages
-    PageNumber create_free_page();
-    PageNumber create_overflow_page(std::vector<std::byte> payload);
-    PageNumber create_node_page();
+    PageNumber create_page(PagerPageType page_type);
+    // NOTE(andrew): create_page overload is specifically for creating overflow page
+    PageNumber create_page(PagerPageType page_type, std::vector<std::byte> payload);
 
     // Methods for setting data
     void write_data(std::vector<std::byte> buffer);

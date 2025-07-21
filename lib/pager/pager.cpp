@@ -82,56 +82,6 @@ void Pager::seek_page(PageNumber pgno) {
   }
 }
 
-PageNumber Pager::create_free_page() {
-  assert(db_file_ptr_ != nullptr);
-
-  FirstPageManager fp_manager(db_file_ptr_); 
-
-  total_num_pages_++;
-
-  PageNumber new_free_pgno = total_num_pages_;
-  PageNumber old_free_page_head = fp_manager.get_free_page_head();
-  PagerFreePageHeader_t free_page_header = PagerFreePageHeader(
-    CHECKSUM,
-    PAGER_FREE_PAGE,
-    old_free_page_head
-  );
-
-  OsFile db_file = *db_file_ptr_;
-  db_file.os_open();
-  db_file.os_append(free_page_header.to_bytes(), PAGE_SIZE);
-  db_file.os_close();
-  fp_manager.set_free_page_head(new_free_pgno);
-
-  return new_free_pgno;
-}
-
-PageNumber Pager::create_overflow_page(
-  std::vector<std::byte> payload
-) {
-  assert(db_file_ptr_ != nullptr);
-
-  OsFile db_file = *db_file_ptr_;
-  total_num_pages_++;
-
-  PageNumber new_pgno = total_num_pages_;
-  PagerOverflowPageHeader_t overflow_page_header = PagerOverflowPageHeader(
-    CHECKSUM,
-    PAGER_OVERFLOW_PAGE,
-    0
-  );
-
-  std::vector<std::byte> overflow_page_data = overflow_page_header.to_bytes();
-  overflow_page_data.insert(
-    overflow_page_data.begin(),
-    payload.begin(),
-    payload.end()
-  );
-
-  db_file.os_append(overflow_page_data, PAGE_SIZE);
-  return new_pgno;
-}
-
 void Pager::insert_freelist(PageNumber pgno) {
   assert(db_file_ptr_ != nullptr);
   assert(pgno != 1);
@@ -213,27 +163,77 @@ PageNumber Pager::peek_freelist() {
   return fpm.get_free_page_head();
 }
 
-PageNumber Pager::create_node_page() {
-  assert (db_file_ptr_ != nullptr);
+PageNumber Pager::create_page(PagerPageType page_type) {
+  assert(page_type == PAGER_FREE_PAGE || page_type == PAGER_NODE_PAGE);
+  assert(db_file_ptr_ != nullptr);
+
+  switch (page_type) {
+    case PAGER_FREE_PAGE: {
+      FirstPageManager fp_manager(db_file_ptr_); 
+
+      total_num_pages_++;
+
+      PageNumber new_free_pgno = total_num_pages_;
+      PageNumber old_free_page_head = fp_manager.get_free_page_head();
+      PagerFreePageHeader_t free_page_header = PagerFreePageHeader(
+        CHECKSUM,
+        PAGER_FREE_PAGE,
+        old_free_page_head
+      );
+
+      OsFile db_file = *db_file_ptr_;
+      db_file.os_open();
+      db_file.os_append(free_page_header.to_bytes(), PAGE_SIZE);
+      db_file.os_close();
+      fp_manager.set_free_page_head(new_free_pgno);
+      return new_free_pgno;
+    }
+    case PAGER_NODE_PAGE: {
+      OsFile db_file = *db_file_ptr_;
+      db_file.os_open();
+
+      PageNumber new_pgno = total_num_pages_ + 1;
+      PagerNodePageHeader_t node_page_header(
+        CHECKSUM,
+        PAGER_NODE_PAGE
+      );
+
+      db_file.os_append(node_page_header.to_bytes(), PAGE_SIZE);
+      total_num_pages_ = new_pgno;
+      db_file.os_close();
+      return new_pgno;
+    }
+    default:
+      throw std::runtime_error("[Pager:create_page]: Can only create free or node pages");
+  }
+}
+
+PageNumber Pager::create_page(PagerPageType page_type, std::vector<std::byte> payload) {
+  assert(page_type == PAGER_OVERFLOW_PAGE);
+  assert(db_file_ptr_ != nullptr);
 
   OsFile db_file = *db_file_ptr_;
-  db_file.os_open();
+  total_num_pages_++;
 
-  PageNumber new_pgno = total_num_pages_ + 1;
-  PagerNodePageHeader_t node_page_header(
+  PageNumber new_pgno = total_num_pages_;
+  PagerOverflowPageHeader_t overflow_page_header = PagerOverflowPageHeader(
     CHECKSUM,
-    PAGER_NODE_PAGE
+    PAGER_OVERFLOW_PAGE,
+    NULL_PAGE
   );
 
-  db_file.os_append(node_page_header.to_bytes(), PAGE_SIZE);
-  total_num_pages_ = new_pgno;
-  db_file.os_close();
+  std::vector<std::byte> overflow_page_data = overflow_page_header.to_bytes();
+  overflow_page_data.insert(
+    overflow_page_data.begin(),
+    payload.begin(),
+    payload.end()
+  );
+
+  db_file.os_append(overflow_page_data, PAGE_SIZE);
   return new_pgno;
 }
 
 void Pager::write_data(std::vector<std::byte> buffer) {
-  // NOTE(andrew): we don't check if db_file_ptr_ is null
-  // since page_manager_ptr_ has ownership
   assert(1 <= curr_page_num_ && curr_page_num_ <= total_num_pages_ &&
          page_open_);
   assert (page_manager_.has_value());

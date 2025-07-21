@@ -39,7 +39,7 @@ TEST(PagerTest, NodePageBasic) {
   for (size_t i = 0; i < 1000; i++) {
     // NOTE(andrew): starts from page 2, since we count by
     // 1-indexed and first page is already allocated
-    ASSERT_EQ(pager.create_node_page(), i+2);
+    ASSERT_EQ(pager.create_page(PAGER_NODE_PAGE), i+2);
   }
   ASSERT_EQ(std::filesystem::file_size(test_db_filename), 1001*PAGE_SIZE);
 
@@ -58,7 +58,7 @@ TEST(PagerTest, FreePageBasic) {
   Pager pager(test_db_filename);
 
   for (size_t i = 0; i < 1000; i++) {
-    ASSERT_EQ(pager.create_free_page(), i+2);
+    ASSERT_EQ(pager.create_page(PAGER_FREE_PAGE), i+2);
   }
   ASSERT_EQ(std::filesystem::file_size(test_db_filename), 1001*PAGE_SIZE);
 
@@ -82,10 +82,10 @@ TEST(PagerTest, FreePageListTraversal) {
     std::uniform_int_distribution<> dist(0, 1);
     bool create_free_page = dist(rng);
     if (create_free_page) {
-      pager.create_free_page();
+      pager.create_page(PAGER_FREE_PAGE);
       num_free_pages++;
     } else
-      pager.create_node_page();
+      pager.create_page(PAGER_NODE_PAGE);
   }
 
   PageNumber free_page_head = pager.peek_freelist();
@@ -105,7 +105,7 @@ TEST(PagerTest, FreePageListRemoval) {
   Pager pager(test_db_filename);
 
   for (int i = 0; i < 500; i++) {
-    pager.create_node_page();
+    pager.create_page(PAGER_NODE_PAGE);
   }
 
   std::vector<PageNumber> free_pages = {
