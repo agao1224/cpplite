@@ -1,10 +1,8 @@
 #include "osfile.h"
-#include "shared.h"
 #include <cstddef>
 #include <sys/fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <iostream>
 
 
 OsFile::OsFile(const std::string& path) {

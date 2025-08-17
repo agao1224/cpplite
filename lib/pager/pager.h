@@ -32,8 +32,13 @@ typedef struct PagerCell {
   uint32_t key;
 
   PageNumber left_child;
-  uint16_t free_start;
-  uint16_t free_end;
+  PageNumber overflow_page;
+
+  std::vector<std::byte> to_bytes() const {
+    std::vector<std::byte> buffer(sizeof(*this));
+    std::memcpy(buffer.data(), static_cast<const void*>(this), sizeof(*this));
+    return buffer;
+  }
 } PagerCell_t;
 
 /**
@@ -50,7 +55,7 @@ typedef struct PagerBasePageHeader {
 
   PagerBasePageHeader(std::vector<std::byte> payload) {
     if (payload.size() < sizeof(PagerBasePageHeader))
-      throw std::runtime_error("[PagerNodePageHeader] Payload too small");
+      throw std::runtime_error("[PagerBasePageHeader] Payload too small");
     std::memcpy(static_cast<void*>(this), payload.data(), sizeof(PagerBasePageHeader));
   }
 
@@ -107,9 +112,21 @@ typedef struct PagerOverflowPageHeader : public PagerBasePageHeader {
 // TODO(andrew): probably rename this to 'BtreePageHeader'
 // Structurally we don't differentiate between node, leaf, or root
 typedef struct PagerNodePageHeader : public PagerBasePageHeader {
+  uint16_t free_start;
+  uint16_t free_end;
+  uint16_t total_bytes_free;
 
-  PagerNodePageHeader(uint32_t checksum_, PagerPageType page_type_) :
-    PagerBasePageHeader(checksum_, page_type_) {}
+  PagerNodePageHeader(
+    uint32_t checksum_,
+    PagerPageType page_type_,
+    uint16_t free_start_,
+    uint16_t free_end_,
+    uint16_t total_bytes_free_
+  ) : 
+    PagerBasePageHeader(checksum_, page_type_),
+    free_start(free_start_),
+    free_end(free_end_),
+    total_bytes_free(total_bytes_free_) {}
 
   PagerNodePageHeader(std::vector<std::byte> payload)
     : PagerBasePageHeader(CHECKSUM, PAGER_NODE_PAGE)
@@ -192,12 +209,26 @@ class FirstPageManager: public BasePageManager {
     void set_num_pages(uint64_t num_pages);
     void set_free_page_head(PageNumber pgno);
     PageNumber get_free_page_head();
+    PageNumber get_next_free_page(PageNumber pgno);
+    PageNumber create_free_page();
 };
 
 class NodePageManager: public BasePageManager {
+  private:
+    PageNumber _create_overflow_pages(std::vector<std::byte> payload);
+
   public:
     NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr);
     ~NodePageManager();
+
+    // NOTE(andrew): Node pages are implemented as slotted pages
+    // See https://siemens.blog/posts/database-page-layout/
+    uint16_t free_start_;
+    uint16_t free_end_;
+    uint16_t total_bytes_free_;
+
+    bool insert_cell(uint32_t key, std::vector<std::byte> cell_data);
+    size_t get_free_space();
 };
 
 class FreePageManager: public BasePageManager {

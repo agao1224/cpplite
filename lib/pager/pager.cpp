@@ -195,7 +195,10 @@ PageNumber Pager::create_page(PagerPageType page_type) {
       PageNumber new_pgno = total_num_pages_ + 1;
       PagerNodePageHeader_t node_page_header(
         CHECKSUM,
-        PAGER_NODE_PAGE
+        PAGER_NODE_PAGE,
+        sizeof(PagerNodePageHeader_t),
+        PAGE_SIZE-1,
+        (PAGE_SIZE-1) - sizeof(PagerNodePageHeader_t)
       );
 
       db_file.os_append(node_page_header.to_bytes(), PAGE_SIZE);
