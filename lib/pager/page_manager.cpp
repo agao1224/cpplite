@@ -408,10 +408,16 @@ std::optional<std::vector<std::byte>> NodePageManager::find_cell(uint32_t key) {
   }
 
   OverflowPageManager page_manager(it, db_file_ptr_);
-  while (it != NULL_PAGE) {
+  std::vector<std::byte> overflow_content;
 
+  while (it != NULL_PAGE) {
+    overflow_content = page_manager.get_overflow_content();
+    payload.insert(payload.end(), overflow_content.begin(), overflow_content.end());
     it = page_manager.get_next_overflow_page();
   }
+
+  assert(payload.size() == num_payload_bytes);
+  return payload;
 }
 
 size_t NodePageManager::get_free_space() {
