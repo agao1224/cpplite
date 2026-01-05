@@ -14,9 +14,9 @@
 // also node pages, but we PAGER_NODE_PAGE to indicate
 // in-use, non-overflow pages
 typedef enum { 
-  PAGER_FREE_PAGE, 
-  PAGER_FIRST_PAGE, 
-  PAGER_NODE_PAGE, 
+  PAGER_FREE_PAGE,
+  PAGER_FIRST_PAGE,
+  PAGER_NODE_PAGE,
   PAGER_OVERFLOW_PAGE,
 } PagerPageType;
 
@@ -109,7 +109,7 @@ typedef struct PagerOverflowPageHeader : public PagerBasePageHeader {
   }
 } PagerOverflowPageHeader_t;
 
-// TODO(andrew): probably rename this to 'BtreePageHeader'
+// NOTE(andrew): probably rename this to 'BtreePageHeader'
 // Structurally we don't differentiate between node, leaf, or root
 typedef struct PagerNodePageHeader : public PagerBasePageHeader {
   uint16_t free_start;
@@ -227,7 +227,10 @@ class NodePageManager: public BasePageManager {
     uint16_t free_end_;
     uint16_t total_bytes_free_;
 
+    std::vector<PagerCell_t> cells_;
+
     bool insert_cell(uint32_t key, std::vector<std::byte> cell_data);
+    std::optional<std::vector<std::byte>> find_cell(uint32_t key);
     size_t get_free_space();
 };
 
@@ -251,6 +254,7 @@ class OverflowPageManager: public BasePageManager {
 
     PageNumber get_next_overflow_page();
     void set_next_overflow_page(PageNumber pgno);
+    std::vector<std::byte> get_overflow_content();
 };
 
 class Pager {
