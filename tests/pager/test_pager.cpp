@@ -1,4 +1,3 @@
-#include <string>
 #include <vector>
 #include <filesystem>
 #include <fstream>
@@ -6,16 +5,15 @@
 
 #include <gtest/gtest.h>
 #include "pager/pager.h"
-#include "test_utils.h"
+#include "db_test_fixture.h"
 
-TEST(PagerTest, InitPager) {
-  const std::string test_db_filename = generate_random_filename();
-  Pager pager(test_db_filename);
+class PagerTest : public DbTestFixture {};
 
-  size_t file_size = std::filesystem::file_size(test_db_filename);
+TEST_F(PagerTest, InitPager) {
+  size_t file_size = std::filesystem::file_size(db_filename);
   ASSERT_EQ(file_size, PAGE_SIZE);
 
-  std::ifstream db_file(test_db_filename, std::ios::binary);
+  std::ifstream db_file(db_filename, std::ios::binary);
   ASSERT_TRUE(db_file.is_open());
 
   std::vector<std::byte> db_contents;
@@ -32,80 +30,68 @@ TEST(PagerTest, InitPager) {
   ASSERT_EQ(first_page_header.num_pages, 1);
 }
 
-TEST(PagerTest, NodePageBasic) {
-  const std::string test_db_filename = generate_random_filename();
-  Pager pager(test_db_filename);
-
+TEST_F(PagerTest, NodePageBasic) {
   for (size_t i = 0; i < 1000; i++) {
     // NOTE(andrew): starts from page 2, since we count by
     // 1-indexed and first page is already allocated
-    ASSERT_EQ(pager.create_page(PAGER_NODE_PAGE), i+2);
+    ASSERT_EQ(pager->create_page(PAGER_NODE_PAGE), i+2);
   }
-  ASSERT_EQ(std::filesystem::file_size(test_db_filename), 1001*PAGE_SIZE);
+  ASSERT_EQ(std::filesystem::file_size(db_filename), 1001*PAGE_SIZE);
 
   for (size_t i = 0; i < 1000; i++) {
-    pager.seek_page(i+2);
-    ASSERT_TRUE(pager.page_manager_.has_value());
-    auto page_manager = std::get<NodePageManager>(pager.page_manager_.value());
+    pager->seek_page(i+2);
+    ASSERT_TRUE(pager->page_manager_.has_value());
+    auto page_manager = std::get<NodePageManager>(pager->page_manager_.value());
     ASSERT_EQ(page_manager.page_type_, PAGER_NODE_PAGE);
     ASSERT_EQ(page_manager.checksum_, CHECKSUM);
     ASSERT_EQ(page_manager.pgno_, i+2);
   }
 }
 
-TEST(PagerTest, FreePageBasic) {
-  const std::string test_db_filename = generate_random_filename();
-  Pager pager(test_db_filename);
-
+TEST_F(PagerTest, FreePageBasic) {
   for (size_t i = 0; i < 1000; i++) {
-    ASSERT_EQ(pager.create_page(PAGER_FREE_PAGE), i+2);
+    ASSERT_EQ(pager->create_page(PAGER_FREE_PAGE), i+2);
   }
-  ASSERT_EQ(std::filesystem::file_size(test_db_filename), 1001*PAGE_SIZE);
+  ASSERT_EQ(std::filesystem::file_size(db_filename), 1001*PAGE_SIZE);
 
   for (size_t i = 0; i < 1000; i++) {
-    pager.seek_page(i+2);
-    ASSERT_TRUE(pager.page_manager_.has_value());
-    auto page_manager = std::get<FreePageManager>(pager.page_manager_.value());
+    pager->seek_page(i+2);
+    ASSERT_TRUE(pager->page_manager_.has_value());
+    auto page_manager = std::get<FreePageManager>(pager->page_manager_.value());
     ASSERT_EQ(page_manager.page_type_, PAGER_FREE_PAGE);
     ASSERT_EQ(page_manager.checksum_, CHECKSUM);
     ASSERT_EQ(page_manager.pgno_, i+2);
   }
 }
 
-TEST(PagerTest, FreePageListTraversal) {
-  const std::string test_db_filename = generate_random_filename();
-  Pager pager(test_db_filename);
-
+TEST_F(PagerTest, FreePageListTraversal) {
   size_t num_free_pages = 0;
   for (size_t i = 0; i < 1000; i++) {
     std::mt19937 rng(std::random_device{}());
     std::uniform_int_distribution<> dist(0, 1);
     bool create_free_page = dist(rng);
     if (create_free_page) {
-      pager.create_page(PAGER_FREE_PAGE);
+      pager->create_page(PAGER_FREE_PAGE);
       num_free_pages++;
     } else
-      pager.create_page(PAGER_NODE_PAGE);
+      pager->create_page(PAGER_NODE_PAGE);
   }
 
-  PageNumber free_page_head = pager.peek_freelist();
+  PageNumber free_page_head = pager->peek_freelist();
   size_t counted_free_pages = 0;
   while (free_page_head != NULL_PAGE) {
-    pager.seek_page(free_page_head);
-    ASSERT_TRUE(pager.page_manager_.has_value());
-    FreePageManager fpm = std::get<FreePageManager>(pager.page_manager_.value());
+    pager->seek_page(free_page_head);
+    ASSERT_TRUE(pager->page_manager_.has_value());
+    FreePageManager fpm = std::get<FreePageManager>(pager->page_manager_.value());
     free_page_head = fpm.get_next_free_page();
     counted_free_pages++;
   }
   ASSERT_EQ(counted_free_pages, num_free_pages);
 }
 
-TEST(PagerTest, FreePageListRemoval) {
-  const std::string test_db_filename = generate_random_filename();
-  Pager pager(test_db_filename);
-
+TEST_F(PagerTest, FreePageListRemoval) {
   for (int i = 0; i < 500; i++) {
-    pager.create_page(PAGER_NODE_PAGE);
+    pager->create_page(PAGER_NODE_PAGE);
   }
 
   std::vector<PageNumber> free_pages = {
@@ -113,19 +99,19 @@ TEST(PagerTest, FreePageListRemoval) {
   };
 
   for (int i = 0; i < free_pages.size(); i++) {
-    pager.insert_freelist(free_pages[i]);
+    pager->insert_freelist(free_pages[i]);
   }
 
-  ASSERT_EQ(pager.peek_freelist(), 499);
+  ASSERT_EQ(pager->peek_freelist(), 499);
 
   for (int i = free_pages.size()-1; i >= 0; i--) {
-    ASSERT_EQ(pager.pop_freelist(), free_pages[i]);
+    ASSERT_EQ(pager->pop_freelist(), free_pages[i]);
   }
-  ASSERT_EQ(pager.pop_freelist(), NULL_PAGE);
+  ASSERT_EQ(pager->pop_freelist(), NULL_PAGE);
 
-  pager.insert_freelist(499);
-  pager.insert_freelist(485);
-  ASSERT_EQ(pager.pop_freelist(), 485);
-  pager.insert_freelist(99);
-  ASSERT_EQ(pager.peek_freelist(), 99);
+  pager->insert_freelist(499);
+  pager->insert_freelist(485);
+  ASSERT_EQ(pager->pop_freelist(), 485);
+  pager->insert_freelist(99);
+  ASSERT_EQ(pager->peek_freelist(), 99);
 }

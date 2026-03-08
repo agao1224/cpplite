@@ -38,6 +38,7 @@ add_executable(
   ${PAGER_TEST_SOURCES}
   tests/test_utils.h
   tests/test_utils.cpp
+  tests/db_test_fixture.h
   lib/vfs/osfile.h
   lib/vfs/osfile.cpp
   lib/pager/pager.h
