@@ -27,6 +27,10 @@ class Pager {
     PageNumber curr_page_num_ = 1;
     PageNumber total_num_pages_ = 1;
 
+    // Writes payload across one or more chained overflow pages, reusing free
+    // pages first then appending new ones.  Returns the first PageNumber.
+    PageNumber _write_overflow_chain(std::vector<std::byte> payload);
+
   public:
   // https://medium.com/technology-in-essence/how-sqlite-database-works-b10ac80e4f07
     std::optional<

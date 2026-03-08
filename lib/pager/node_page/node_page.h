@@ -10,7 +10,7 @@
 #pragma once
 
 typedef struct PagerCell {
-  uint16_t size;
+  uint32_t size;
   uint32_t key;
 
   PageNumber left_child;
@@ -61,12 +61,14 @@ typedef struct PagerNodePageHeader : public PagerBasePageHeader {
   }
 } PagerNodePageHeader_t;
 
+class Pager;
+
 class NodePageManager: public BasePageManager {
   private:
-    PageNumber _create_overflow_pages(std::vector<std::byte> payload);
+    Pager* pager_;
 
   public:
-    NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr);
+    NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr, Pager* pager);
     ~NodePageManager();
 
     std::vector<PagerCell_t> cells_;

@@ -31,6 +31,7 @@ OverflowPageManager::OverflowPageManager(PageNumber pgno, std::shared_ptr<OsFile
     assert(overflow_page_header.page_type == PAGER_OVERFLOW_PAGE);
     page_type_ = overflow_page_header.page_type;
     next_overflow_page_ = overflow_page_header.next_overflow_page;
+    num_bytes_ = overflow_page_header.num_bytes;
     pgno_ = pgno;
     data_.resize(num_payload_bytes);
 
@@ -44,6 +45,10 @@ OverflowPageManager::OverflowPageManager(PageNumber pgno, std::shared_ptr<OsFile
 
 PageNumber OverflowPageManager::get_next_overflow_page() {
   return next_overflow_page_;
+}
+
+uint32_t OverflowPageManager::get_num_bytes() {
+  return num_bytes_;
 }
 
 void OverflowPageManager::set_next_overflow_page(PageNumber pgno) {
@@ -84,17 +89,17 @@ std::vector<std::byte> OverflowPageManager::get_overflow_content() {
 
   OsFile db_file = *db_file_ptr_;
 
-  size_t num_overflow_bytes = PAGE_SIZE - sizeof(PagerOverflowPageHeader_t);
   off_t overflow_content_offset = (pgno_-1) * PAGE_SIZE + sizeof(PagerOverflowPageHeader_t);
-  std::vector<std::byte> overflow_page_content(num_overflow_bytes);
+  std::vector<std::byte> overflow_page_content(num_bytes_);
 
+  db_file.os_open();
   bool seek_ok = db_file.os_seek(overflow_content_offset);
   if (!seek_ok)
     throw std::runtime_error("[OverflowPageManager]: Failed to seek to get_overflow_content");
 
-  ssize_t bytes_read = db_file.os_read(overflow_page_content, num_overflow_bytes);
-  if (bytes_read != -1)
-    throw std::runtime_error("OverflowPageManager]: Failed to read to get_overflow_content");
+  ssize_t bytes_read = db_file.os_read(overflow_page_content, num_bytes_);
+  if (bytes_read == -1)
+    throw std::runtime_error("[OverflowPageManager]: Failed to read to get_overflow_content");
 
   db_file.os_close();
   return overflow_page_content;
