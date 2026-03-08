@@ -3,3 +3,4 @@ app
 .DS_Store
 sql_parser
 *.sh
+.cache

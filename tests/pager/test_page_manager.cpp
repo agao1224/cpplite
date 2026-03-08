@@ -1,7 +1,6 @@
 #include <cstddef>
 #include <string>
 #include <filesystem>
-#include <iostream>
 
 #include <gtest/gtest.h>
 #include "vfs/osfile.h"

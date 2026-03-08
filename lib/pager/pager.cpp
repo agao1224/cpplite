@@ -1,7 +1,6 @@
 #include <memory>
 #include <cassert>
 #include <stdexcept>
-#include <iostream>
 
 #include "pager.h"
 #include "shared.h"
