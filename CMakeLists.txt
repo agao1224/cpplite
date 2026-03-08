@@ -43,6 +43,10 @@ add_executable(
   lib/pager/pager.h
   lib/pager/pager.cpp
   lib/pager/page_manager.cpp
+  lib/pager/first_page/first_page_manager.cpp
+  lib/pager/free_page/free_page_manager.cpp
+  lib/pager/node_page/node_page_manager.cpp
+  lib/pager/overflow_page/overflow_page_manager.cpp
 )
 
 target_link_libraries(

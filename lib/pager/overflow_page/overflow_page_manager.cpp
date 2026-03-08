@@ -1,22 +1,19 @@
 #include <cstddef>
-#include <cstdint>
 #include <cstring>
-#include <memory>
-#include <stdexcept>
 #include <cstddef>
 #include <cassert>
-#include <deque>
 
-#include "pager.h"
+#include "overflow_page.h"
 
 
 OverflowPageManager::OverflowPageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr) {
-  assert(db_file_ptr_ != nullptr);
+  assert(db_file_ptr != nullptr);
 
   db_file_ptr_ = db_file_ptr;
 
   std::vector<std::byte> page_content(PAGE_SIZE);
   OsFile db_file = *db_file_ptr;
+  db_file.os_open();
   bool seek_ok = db_file.os_seek((pgno-1) * PAGE_SIZE);
   if (!seek_ok)
     throw std::runtime_error("[OverflowPageManager]: Failed to seek");

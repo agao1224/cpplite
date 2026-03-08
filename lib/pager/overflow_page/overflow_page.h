@@ -1,9 +1,9 @@
 #include <cstdint>
 #include <cstddef>
 #include <vector>
-#include <optional>
 
 #include "shared.h"
+#include "pager/base_page.h"
 #include "vfs/osfile.h"
 
 #pragma once
