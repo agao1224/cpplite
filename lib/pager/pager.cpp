@@ -195,14 +195,17 @@ PageNumber Pager::create_page(PagerPageType page_type) {
       PagerNodePageHeader_t node_page_header(
         CHECKSUM,
         PAGER_NODE_PAGE,
-        sizeof(PagerNodePageHeader_t),
-        PAGE_SIZE-1,
-        (PAGE_SIZE-1) - sizeof(PagerNodePageHeader_t)
+        0,
+        PAGE_SIZE - sizeof(PagerNodePageHeader_t)
       );
 
       db_file.os_append(node_page_header.to_bytes(), PAGE_SIZE);
       total_num_pages_ = new_pgno;
       db_file.os_close();
+
+      FirstPageManager fpm(db_file_ptr_);
+      fpm.set_num_pages(new_pgno);
+
       return new_pgno;
     }
     default:

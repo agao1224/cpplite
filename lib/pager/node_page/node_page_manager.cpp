@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cassert>
 #include <deque>
+#include <iostream>
+#include <stdexcept>
 
 #include "node_page.h"
 #include "pager/first_page/first_page.h"
@@ -40,25 +42,24 @@ NodePageManager::NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
   if (checksum_ == CHECKSUM && num_payload_bytes >= 0) {
     assert(node_page_header.page_type == PAGER_NODE_PAGE);
     page_type_ = node_page_header.page_type;
-    free_start_ = node_page_header.free_start;
-    free_end_ = node_page_header.free_end;
+    num_cells_ = node_page_header.num_cells;
     total_bytes_free_ = node_page_header.total_bytes_free;
     pgno_ = pgno;
 
     data_.resize(num_payload_bytes);
 
-    size_t num_cell_bytes = static_cast<size_t>(free_start_ - sizeof(PagerNodePageHeader_t));
+    size_t num_cell_bytes = static_cast<size_t>(bytes_read - sizeof(PagerNodePageHeader_t));
 
-    cells_.resize(num_cell_bytes / sizeof(PagerCell_t));
+    cells_.resize(num_cells_);
     std::memcpy(
       cells_.data(),
       page_content.data() + sizeof(PagerNodePageHeader_t),
-      num_cell_bytes
+      num_cells_ * sizeof(PagerCell_t)
     );
 
     std::memcpy(data_.data(),
-                page_content.data() + free_start_,
-                static_cast<size_t>(PAGE_SIZE - free_start_));
+                page_content.data() + sizeof(PagerNodePageHeader_t),
+                static_cast<size_t>(PAGE_SIZE - sizeof(PagerNodePageHeader_t)));
   } else { 
     throw std::runtime_error("[NodePageManager]: Invalid checksum");
   }
@@ -130,7 +131,7 @@ PageNumber NodePageManager::_create_overflow_pages(std::vector<std::byte> payloa
 
   std::vector<std::pair<PageNumber, PagerOverflowPageHeader_t>> overflow_headers;
   for (size_t i = 0; i < page_chunks.size(); i++) {
-    std::vector<std::byte> payload = page_chunks[i];
+    std::vector<std::byte> curr_payload = page_chunks[i];
     PageNumber overflow_pgno = fpm.create_free_page();
     PagerOverflowPageHeader_t overflow_header(
       CHECKSUM,
@@ -151,6 +152,18 @@ PageNumber NodePageManager::_create_overflow_pages(std::vector<std::byte> payloa
         throw std::runtime_error("[NodePageManager:_create_overflow_pages]: Failed to overwrite free page");
       db_file.os_close();
     }
+
+    db_file.os_open();
+    bool seek_ok = db_file.os_seek((overflow_pgno-1)*PAGE_SIZE + sizeof(PagerOverflowPageHeader_t));
+    if (!seek_ok)
+      throw std::runtime_error("[NodePageManager:_create_overflow_pages]: Failed to seek payload");
+    bool write_ok = db_file.os_write(curr_payload, curr_payload.size());
+    if (!write_ok)
+      throw std::runtime_error("[NodePageManager:_create_overflow_pages]: Failed to write payload");
+    db_file.os_close();
+
+    if (i == 0 && first_overflow_page == NULL_PAGE)
+      first_overflow_page = overflow_pgno;
     overflow_headers.push_back(std::make_pair(overflow_pgno, overflow_header));
   }
 
@@ -171,66 +184,55 @@ PageNumber NodePageManager::_create_overflow_pages(std::vector<std::byte> payloa
 }
 
 bool NodePageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data) {
-  assert(free_end_ - free_start_ == total_bytes_free_);
+  assert(num_cells_ == cells_.size());
   assert(db_file_ptr_ != nullptr);
 
-  if (sizeof(PagerCell_t) > total_bytes_free_) {
-    // NOTE(andrew): Not enough space to write in pager cell,
-    // the caller should handle creating another node page to
-    // fit this in
+  // NOTE(andrew): Not enough space to write in pager cell,
+  // the caller should handle creating another node page to
+  // fit this in
+  if (sizeof(PagerCell_t) > total_bytes_free_)
     return false;
-  }
 
   assert(sizeof(PagerCell_t) <= total_bytes_free_);
   PagerCell_t pager_cell;
   pager_cell.size = cell_data.size();
   pager_cell.key = key;
-  pager_cell.overflow_page = NULL_PAGE;
+  pager_cell.left_child = NULL_PAGE;
+  pager_cell.record_page = _create_overflow_pages(cell_data);
 
   uint16_t free_bytes = total_bytes_free_ - sizeof(PagerCell_t);
+
+  cells_.push_back(pager_cell);
+  std::vector<std::byte> cell_bytes(cells_.size() * sizeof(PagerCell_t));
+  std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
 
   OsFile db_file = *db_file_ptr_;
   bool seek_ok, write_ok;
 
-  if (free_bytes < cell_data.size()) {
-    // NOTE(andrew): if we cannot fit payload into the remaining free space,
-    // offload the entire payload to overflow pages
-    pager_cell.overflow_page = _create_overflow_pages(cell_data);
-  } else {
-    db_file.os_open();
-    free_end_ -= cell_data.size();
-
-    pager_cell.offset = free_end_;
-
-    seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + free_end_);
-    if (!seek_ok)
-      throw std::runtime_error("[NodePageManager:insert_cell]: Failed to seek to write cell_data payload");
-    write_ok = db_file.os_write(cell_data, cell_data.size());
-    if (!write_ok)
-      throw std::runtime_error("[NodePageManager:insert_cell]: Failed to write cell_data payload");
-
-    db_file.os_close();
-  }
-
   db_file.os_open();
-  seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + free_start_);
+  seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + sizeof(PagerNodePageHeader_t));
   if (!seek_ok)
     throw std::runtime_error("[NodePageManager:insert_cell]: Failed to seek to write cell header");
-  write_ok = db_file.os_write(pager_cell.to_bytes(), sizeof(PagerCell_t));
+  write_ok = db_file.os_write(cell_bytes, cell_bytes.size());
   if (!write_ok)
     throw std::runtime_error("[NodePageManager:insert_cell]: Failed to write cell header");
 
-  free_start_ += sizeof(PagerCell_t);
-  total_bytes_free_ = free_end_ - free_start_;
+  total_bytes_free_ -= sizeof(PagerCell_t);
+  num_cells_++;
   PagerNodePageHeader_t node_page_header(
     CHECKSUM,
     PAGER_NODE_PAGE,
-    free_start_,
-    free_end_,
+    num_cells_,
     total_bytes_free_
   );
 
-  assert(free_end_ - free_start_ == total_bytes_free_);
+  size_t expected_bytes = (
+    sizeof(PagerNodePageHeader_t)
+    + (num_cells_ * sizeof(PagerCell_t))
+    + total_bytes_free_
+  );
+  std::cout << "expected_bytes: " << expected_bytes << std::endl;
+  assert(expected_bytes == PAGE_SIZE);
 
   seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE);
   if (!seek_ok)
@@ -243,7 +245,7 @@ bool NodePageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data
   return true;
 }
 
-std::optional<std::vector<std::byte>> NodePageManager::find_cell(uint32_t key) {
+std::optional<std::vector<std::byte>> NodePageManager::get_payload(uint32_t key) {
   assert(db_file_ptr_ != nullptr);
 
   std::optional<PagerCell_t> cell = std::nullopt;
@@ -261,24 +263,7 @@ std::optional<std::vector<std::byte>> NodePageManager::find_cell(uint32_t key) {
   std::vector<std::byte> payload;
   payload.reserve(num_payload_bytes);
 
-  PageNumber it = cell->overflow_page;
-
-  OsFile db_file = *db_file_ptr_;
-  if (it != NULL_PAGE) {
-    db_file.os_open();
-    off_t payload_offset = (pgno_ - 1) * PAGE_SIZE + cell->offset;
-
-    bool seek_ok = db_file.os_seek(payload_offset);
-    if (!seek_ok)
-      throw std::runtime_error("[NodePageManager]: Failed to seek to read cell payload");
-    bool read_ok = db_file.os_read(payload, num_payload_bytes);
-    if (!read_ok)
-      throw std::runtime_error("[NodePageManager]: Failed to read cell payload");
-
-    db_file.os_close();
-    return payload;
-  }
-
+  PageNumber it = cell->record_page;
   OverflowPageManager page_manager(it, db_file_ptr_);
   std::vector<std::byte> overflow_content;
 

@@ -18,21 +18,6 @@ typedef enum {
   PAGER_OVERFLOW_PAGE,
 } PagerPageType;
 
-typedef struct PagerCell {
-  uint16_t offset;
-  uint16_t size;
-  uint32_t key;
-
-  PageNumber left_child;
-  PageNumber overflow_page;
-
-  std::vector<std::byte> to_bytes() const {
-    std::vector<std::byte> buffer(sizeof(*this));
-    std::memcpy(buffer.data(), static_cast<const void*>(this), sizeof(*this));
-    return buffer;
-  }
-} PagerCell_t;
-
 typedef struct PagerBasePageHeader {
   uint32_t checksum;
   PagerPageType page_type;
