@@ -1,9 +1,12 @@
 #include <memory>
 #include <cassert>
+#include <cstring>
 #include <stdexcept>
 
 #include "pager.h"
 #include "shared.h"
+#include "pager/free_page/free_page.h"
+#include "pager/overflow_page/overflow_page.h"
 
 Pager::Pager(std::string db_filename) {
   PagerFirstPageHeader_t first_page_header(
@@ -62,7 +65,7 @@ void Pager::seek_page(PageNumber pgno) {
       break;
     }
     case PAGER_NODE_PAGE: {
-      NodePageManager npm(pgno, db_file_ptr_);
+      NodePageManager npm(pgno, db_file_ptr_, this);
       page_manager_ = std::make_optional<NodePageManager>(npm);
       break;
     }
@@ -195,14 +198,17 @@ PageNumber Pager::create_page(PagerPageType page_type) {
       PagerNodePageHeader_t node_page_header(
         CHECKSUM,
         PAGER_NODE_PAGE,
-        sizeof(PagerNodePageHeader_t),
-        PAGE_SIZE-1,
-        (PAGE_SIZE-1) - sizeof(PagerNodePageHeader_t)
+        0,
+        PAGE_SIZE - sizeof(PagerNodePageHeader_t)
       );
 
       db_file.os_append(node_page_header.to_bytes(), PAGE_SIZE);
       total_num_pages_ = new_pgno;
       db_file.os_close();
+
+      FirstPageManager fpm(db_file_ptr_);
+      fpm.set_num_pages(new_pgno);
+
       return new_pgno;
     }
     default:
@@ -210,29 +216,81 @@ PageNumber Pager::create_page(PagerPageType page_type) {
   }
 }
 
+PageNumber Pager::_write_overflow_chain(std::vector<std::byte> payload) {
+  assert(db_file_ptr_ != nullptr);
+
+  const uint32_t chunk_size = PAGE_SIZE - sizeof(PagerOverflowPageHeader_t);
+  const uint32_t payload_size = payload.size();
+
+  std::vector<std::vector<std::byte>> chunks;
+  std::vector<uint32_t> chunk_sizes;
+  for (uint32_t offset = 0; offset < payload_size; offset += chunk_size) {
+    uint32_t this_chunk_size = std::min(chunk_size, payload_size - offset);
+    chunk_sizes.push_back(this_chunk_size);
+    chunks.emplace_back(payload.begin() + offset, payload.begin() + offset + this_chunk_size);
+  }
+  if (chunks.empty())
+    return NULL_PAGE;
+
+  FirstPageManager fpm(db_file_ptr_);
+  PageNumber free_head = fpm.get_free_page_head();
+
+  std::vector<PageNumber> page_nums;
+  page_nums.reserve(chunks.size());
+
+  OsFile db_file = *db_file_ptr_;
+
+  for (size_t i = 0; i < chunks.size(); i++) {
+    if (free_head != NULL_PAGE) {
+      page_nums.push_back(free_head);
+      FreePageManager tmp(free_head, db_file_ptr_);
+      free_head = tmp.get_next_free_page();
+      fpm.set_free_page_head(free_head);
+    } else {
+      total_num_pages_++;
+      page_nums.push_back(total_num_pages_);
+
+      std::vector<std::byte> blank(PAGE_SIZE, std::byte{0});
+      db_file.os_open();
+      db_file.os_append(blank, PAGE_SIZE);
+      db_file.os_close();
+    }
+  }
+
+  for (size_t i = 0; i < chunks.size(); i++) {
+    PageNumber next_pgno = (i+1 < chunks.size()) ? page_nums[i+1] : NULL_PAGE;
+
+    PagerOverflowPageHeader_t header(
+      CHECKSUM,
+      PAGER_OVERFLOW_PAGE,
+      next_pgno,
+      chunk_sizes[i]
+    );
+    std::vector<std::byte> page_data(PAGE_SIZE, std::byte{0});
+    std::memcpy(page_data.data(), header.to_bytes().data(), sizeof(PagerOverflowPageHeader_t));
+    std::memcpy(
+      page_data.data() + sizeof(PagerOverflowPageHeader_t),
+      chunks[i].data(),
+      chunk_sizes[i]
+    );
+
+    db_file.os_open();
+    bool seek_ok = db_file.os_seek((page_nums[i] - 1) * PAGE_SIZE);
+    if (!seek_ok)
+      throw std::runtime_error("[Pager::_write_overflow_chain]: Failed to seek");
+    bool write_ok = db_file.os_write(page_data, PAGE_SIZE);
+    if (!write_ok)
+      throw std::runtime_error("[Pager::_write_overflow_chain]: Failed to write");
+    db_file.os_close();
+  }
+
+  return page_nums[0];
+}
+
 PageNumber Pager::create_page(PagerPageType page_type, std::vector<std::byte> payload) {
   assert(page_type == PAGER_OVERFLOW_PAGE);
   assert(db_file_ptr_ != nullptr);
-
-  OsFile db_file = *db_file_ptr_;
-  total_num_pages_++;
-
-  PageNumber new_pgno = total_num_pages_;
-  PagerOverflowPageHeader_t overflow_page_header = PagerOverflowPageHeader(
-    CHECKSUM,
-    PAGER_OVERFLOW_PAGE,
-    NULL_PAGE
-  );
-
-  std::vector<std::byte> overflow_page_data = overflow_page_header.to_bytes();
-  overflow_page_data.insert(
-    overflow_page_data.begin(),
-    payload.begin(),
-    payload.end()
-  );
-
-  db_file.os_append(overflow_page_data, PAGE_SIZE);
-  return new_pgno;
+  return _write_overflow_chain(payload);
 }
 
 void Pager::write_data(std::vector<std::byte> buffer) {

@@ -9,24 +9,36 @@
 
 #pragma once
 
+typedef struct PagerCell {
+  uint32_t size;
+  uint32_t key;
+
+  PageNumber left_child;
+  PageNumber record_page;
+
+  std::vector<std::byte> to_bytes() const {
+    std::vector<std::byte> buffer(sizeof(*this));
+    std::memcpy(buffer.data(), static_cast<const void*>(this), sizeof(*this));
+    return buffer;
+  }
+} PagerCell_t;
+
 // NOTE(andrew): probably rename this to 'BtreePageHeader'
 // Structurally we don't differentiate between node, leaf, or root
 typedef struct PagerNodePageHeader : public PagerBasePageHeader {
-  uint16_t free_start;
-  uint16_t free_end;
-  uint16_t total_bytes_free;
+  size_t num_cells;
+  size_t total_bytes_free;
 
   PagerNodePageHeader(
     uint32_t checksum_,
     PagerPageType page_type_,
-    uint16_t free_start_,
-    uint16_t free_end_,
+    size_t num_cells_,
     uint16_t total_bytes_free_
   ) : 
     PagerBasePageHeader(checksum_, page_type_),
-    free_start(free_start_),
-    free_end(free_end_),
-    total_bytes_free(total_bytes_free_) {}
+    num_cells(num_cells_),
+    total_bytes_free(total_bytes_free_)
+    {}
 
   PagerNodePageHeader(std::vector<std::byte> payload)
     : PagerBasePageHeader(CHECKSUM, PAGER_NODE_PAGE)
@@ -49,23 +61,21 @@ typedef struct PagerNodePageHeader : public PagerBasePageHeader {
   }
 } PagerNodePageHeader_t;
 
+class Pager;
+
 class NodePageManager: public BasePageManager {
   private:
-    PageNumber _create_overflow_pages(std::vector<std::byte> payload);
+    Pager* pager_;
 
   public:
-    NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr);
+    NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr, Pager* pager);
     ~NodePageManager();
 
-    // NOTE(andrew): Node pages are implemented as slotted pages
-    // See https://siemens.blog/posts/database-page-layout/
-    uint16_t free_start_;
-    uint16_t free_end_;
+    std::vector<PagerCell_t> cells_;
+    size_t num_cells_;
     uint16_t total_bytes_free_;
 
-    std::vector<PagerCell_t> cells_;
-
     bool insert_cell(uint32_t key, std::vector<std::byte> cell_data);
-    std::optional<std::vector<std::byte>> find_cell(uint32_t key);
+    std::optional<std::vector<std::byte>> get_payload(uint32_t key);
     size_t get_free_space();
 };
