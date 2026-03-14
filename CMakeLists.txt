@@ -7,6 +7,7 @@ include_directories(${CMAKE_SOURCE_DIR}/tests)
 # GoogleTest requires at least C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -16,6 +17,24 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
+FetchContent_Declare(
+  antlr4_runtime
+  GIT_REPOSITORY https://github.com/antlr/antlr4.git
+  GIT_TAG 4.13.2
+  SOURCE_SUBDIR runtime/Cpp
+)
+set(ANTLR4_INSTALL OFF CACHE BOOL "" FORCE)
+set(WITH_DEMO OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(antlr4_runtime)
+
+file(GLOB PARSER_SOURCES lib/parser/*.cpp)
+add_library(parser STATIC ${PARSER_SOURCES})
+target_include_directories(parser PUBLIC
+  lib/parser
+  ${antlr4_runtime_SOURCE_DIR}/runtime/Cpp/runtime/src
+)
+target_link_libraries(parser antlr4_static)
 
 enable_testing()
 

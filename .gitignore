@@ -4,3 +4,4 @@ app
 sql_parser
 *.sh
 .cache
+dist/

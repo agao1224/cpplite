@@ -2,7 +2,6 @@
 #include <cstring>
 #include <cstddef>
 #include <cassert>
-#include <iostream>
 #include <stdexcept>
 
 #include "node_page.h"
