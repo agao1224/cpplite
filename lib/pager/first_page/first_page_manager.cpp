@@ -18,8 +18,6 @@ FirstPageManager::FirstPageManager(std::shared_ptr<OsFile> db_file_ptr) {
   db_file.os_open();
   ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
-  if (bytes_read == -1)
-    throw std::runtime_error("[FirstPageManager]: Failed to read page");
 
   PagerFirstPageHeader_t first_page_header(page_content);
 
