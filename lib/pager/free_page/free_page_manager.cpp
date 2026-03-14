@@ -20,8 +20,6 @@ FreePageManager::FreePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
   ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
-  if (bytes_read == -1)
-    throw std::runtime_error("[FreePageManager]: Failed to read page");
 
   PagerFreePageHeader_t free_page_header(page_content);
   checksum_ = free_page_header.checksum;

@@ -28,8 +28,6 @@ NodePageManager::NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
   ssize_t bytes_read = db_file.os_read(page_content, PAGE_SIZE);
   db_file.os_close();
-  if (bytes_read == -1)
-    throw std::runtime_error("[NodePageManager]: Failed to read page");
 
   PagerNodePageHeader_t node_page_header(page_content);
 
