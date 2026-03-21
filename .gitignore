@@ -5,3 +5,4 @@ sql_parser
 *.sh
 .cache
 dist/
+plan.md
