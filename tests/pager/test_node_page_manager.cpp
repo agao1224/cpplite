@@ -13,14 +13,6 @@
 
 class NodePageManagerTest : public DbTestFixture {};
 
-size_t generate_random_payload_size(size_t payload_size_limit) {
-  unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-  std::mt19937 gen(seed);
-  std::uniform_int_distribution<> distrib(1, payload_size_limit);
-  return (size_t) distrib(gen);
-}
-
-
 TEST_F(NodePageManagerTest, NodePageManagerBasic) {
   ASSERT_NE(db_file_ptr, nullptr);
 

@@ -15,6 +15,7 @@ typedef enum {
   PAGER_FREE_PAGE,
   PAGER_FIRST_PAGE,
   PAGER_NODE_PAGE,
+  PAGER_LEAF_PAGE,
   PAGER_OVERFLOW_PAGE,
 } PagerPageType;
 

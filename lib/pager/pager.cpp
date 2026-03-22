@@ -4,7 +4,10 @@
 #include <stdexcept>
 
 #include "pager.h"
+#include "pager/first_page/first_page.h"
 #include "shared.h"
+#include "pager/base_page.h"
+#include "pager/leaf_page/leaf_page.h"
 #include "pager/free_page/free_page.h"
 #include "pager/overflow_page/overflow_page.h"
 
@@ -166,7 +169,7 @@ PageNumber Pager::peek_freelist() {
 }
 
 PageNumber Pager::create_page(PagerPageType page_type) {
-  assert(page_type == PAGER_FREE_PAGE || page_type == PAGER_NODE_PAGE);
+  assert(page_type == PAGER_FREE_PAGE || page_type == PAGER_NODE_PAGE || page_type == PAGER_LEAF_PAGE);
   assert(db_file_ptr_ != nullptr);
 
   switch (page_type) {
@@ -209,6 +212,28 @@ PageNumber Pager::create_page(PagerPageType page_type) {
       FirstPageManager fpm(db_file_ptr_);
       fpm.set_num_pages(new_pgno);
 
+      return new_pgno;
+    }
+    case PAGER_LEAF_PAGE: {
+      OsFile db_file = *db_file_ptr_;
+      db_file.os_open();
+
+      PageNumber new_pgno = total_num_pages_ + 1;
+      PagerLeafPageHeader_t leaf_page_header(
+        CHECKSUM,
+        PAGER_LEAF_PAGE,
+        0,
+        PAGE_SIZE - sizeof(PagerLeafPageHeader_t),
+        NULL_PAGE,
+        NULL_PAGE
+      );
+
+      db_file.os_append(leaf_page_header.to_bytes(), PAGE_SIZE);
+      total_num_pages_ = new_pgno;
+      db_file.os_close();
+
+      FirstPageManager fpm(db_file_ptr_);
+      fpm.set_num_pages(new_pgno);
       return new_pgno;
     }
     default:
