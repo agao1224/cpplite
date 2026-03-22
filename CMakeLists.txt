@@ -63,7 +63,6 @@ add_executable(
   lib/vfs/osfile.cpp
   lib/pager/pager.h
   lib/pager/pager.cpp
-  lib/pager/page_manager.cpp
   lib/pager/first_page/first_page_manager.cpp
   lib/pager/free_page/free_page_manager.cpp
   lib/pager/node_page/node_page_manager.cpp

@@ -54,7 +54,6 @@ class Pager {
     // NOTE(andrew): create_page overload is specifically for creating overflow page
     PageNumber create_page(PagerPageType page_type, std::vector<std::byte> payload);
 
-    void write_data(std::vector<std::byte> buffer);
     void set_num_pages(PageNumber new_num_pages);
 
     void insert_freelist(PageNumber pgno);
