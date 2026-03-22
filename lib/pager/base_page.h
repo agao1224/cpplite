@@ -43,6 +43,4 @@ class BasePageManager {
     PagerPageType page_type_;
     PageNumber pgno_;
     std::vector<std::byte> data_;
-
-    void set_data(std::vector<std::byte> buffer, size_t num_bytes, PageNumber page_num);
 };

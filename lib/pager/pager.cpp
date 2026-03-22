@@ -318,15 +318,6 @@ PageNumber Pager::create_page(PagerPageType page_type, std::vector<std::byte> pa
   return _write_overflow_chain(payload);
 }
 
-void Pager::write_data(std::vector<std::byte> buffer) {
-  assert(1 <= curr_page_num_ && curr_page_num_ <= total_num_pages_ &&
-         page_open_);
-  assert (page_manager_.has_value());
-
-  auto& page_manager = std::get<BasePageManager>(page_manager_.value());
-  page_manager.set_data(buffer, sizeof(buffer), curr_page_num_);
-}
-
 void Pager::set_num_pages(PageNumber new_num_pages) {
   assert(db_file_ptr_ != nullptr);
 
