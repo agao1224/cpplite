@@ -12,6 +12,14 @@
 
 #pragma once
 
+typedef std::variant<
+  FirstPageManager,
+  NodePageManager,
+  LeafPageManager,
+  BasePageManager,
+  FreePageManager,
+  OverflowPageManager
+> PageManager;
 
 class Pager {
   private:
@@ -35,16 +43,7 @@ class Pager {
 
   public:
   // https://medium.com/technology-in-essence/how-sqlite-database-works-b10ac80e4f07
-    std::optional<
-      std::variant<
-        FirstPageManager,
-        NodePageManager,
-        LeafPageManager,
-        BasePageManager,
-        FreePageManager,
-        OverflowPageManager
-      >
-    > page_manager_;
+    PageManager page_manager_;
     Pager(std::string db_filename);
     ~Pager() = default;
 
@@ -55,6 +54,7 @@ class Pager {
     PageNumber create_page(PagerPageType page_type, std::vector<std::byte> payload);
 
     void set_num_pages(PageNumber new_num_pages);
+    PagerPageType get_page_type(PageNumber pgno);
 
     void insert_freelist(PageNumber pgno);
     PageNumber pop_freelist();

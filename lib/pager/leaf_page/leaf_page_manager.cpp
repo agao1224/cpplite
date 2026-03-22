@@ -65,7 +65,7 @@ LeafPageManager::LeafPageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
 LeafPageManager::~LeafPageManager() = default;
 
-bool LeafPageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data) {
+bool LeafPageManager::insert_cell(DefaultPagerKey key, std::vector<std::byte> cell_data) {
   assert(num_cells_ == cells_.size());
   assert(db_file_ptr_ != nullptr);
   assert(pager_ != nullptr);
@@ -125,7 +125,7 @@ bool LeafPageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data
   return true;
 }
 
-std::optional<std::vector<std::byte>> LeafPageManager::get_payload(uint32_t key) {
+std::optional<std::vector<std::byte>> LeafPageManager::get_payload(DefaultPagerKey key) {
   assert(db_file_ptr_ != nullptr);
 
   std::optional<LeafCell_t> cell = std::nullopt;

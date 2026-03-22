@@ -53,7 +53,7 @@ NodePageManager::NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
 NodePageManager::~NodePageManager() = default;
 
-bool NodePageManager::insert_node_cell(uint32_t key) {
+bool NodePageManager::insert_node_cell(DefaultPagerKey key) {
   assert(num_cells_ == cells_.size());
   assert(db_file_ptr_ != nullptr);
 
@@ -111,13 +111,13 @@ bool NodePageManager::insert_node_cell(uint32_t key) {
   return true;
 }
 
-std::optional<size_t> NodePageManager::find_node_cell_idx(uint32_t target_key) {
+std::optional<size_t> NodePageManager::find_node_cell_idx(DefaultPagerKey target_key) {
   assert(cells_.size() == num_cells_);
   size_t lo = 0;
   size_t hi = num_cells_;
   while (lo < hi) {
     size_t mid = lo + (hi - lo)/2;
-    uint32_t node_key = cells_[mid].key;
+    DefaultPagerKey node_key = cells_[mid].key;
 
     if (target_key < node_key) hi = mid;
     else if (node_key < target_key) lo = mid+1;
@@ -126,7 +126,7 @@ std::optional<size_t> NodePageManager::find_node_cell_idx(uint32_t target_key) {
   return std::nullopt;
 }
 
-void NodePageManager::set_cell_left_child(uint32_t key, PageNumber left_child_pgno) {
+void NodePageManager::set_cell_left_child(DefaultPagerKey key, PageNumber left_child_pgno) {
   assert(db_file_ptr_ != nullptr);
   assert(num_cells_ == cells_.size());
   std::optional<size_t> key_idx_opt = find_node_cell_idx(key);
