@@ -4,7 +4,7 @@ project(cpplite)
 include_directories(${CMAKE_SOURCE_DIR}/lib)
 include_directories(${CMAKE_SOURCE_DIR}/tests)
 
-# GoogleTest requires at least C++17
+# NOTE(andrew): GoogleTest requires at least C++17
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -14,7 +14,8 @@ FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
-# For Windows: Prevent overriding the parent project's compiler/linker settings
+
+# NOTE(andrew): For Windows - prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
@@ -66,6 +67,7 @@ add_executable(
   lib/pager/first_page/first_page_manager.cpp
   lib/pager/free_page/free_page_manager.cpp
   lib/pager/node_page/node_page_manager.cpp
+  lib/pager/leaf_page/leaf_page_manager.cpp
   lib/pager/overflow_page/overflow_page_manager.cpp
 )
 

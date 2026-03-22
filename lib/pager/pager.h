@@ -6,6 +6,7 @@
 #include "pager/overflow_page/overflow_page.h"
 #include "pager/free_page/free_page.h"
 #include "pager/first_page/first_page.h"
+#include "pager/leaf_page/leaf_page.h"
 #include "pager/node_page/node_page.h"
 #include "vfs/osfile.h"
 
@@ -27,8 +28,9 @@ class Pager {
     PageNumber curr_page_num_ = 1;
     PageNumber total_num_pages_ = 1;
 
+    // NOTE(andrew):
     // Writes payload across one or more chained overflow pages, reusing free
-    // pages first then appending new ones.  Returns the first PageNumber.
+    // pages first then appending new ones. Returns the first PageNumber in the chain.
     PageNumber _write_overflow_chain(std::vector<std::byte> payload);
 
   public:
@@ -37,6 +39,7 @@ class Pager {
       std::variant<
         FirstPageManager,
         NodePageManager,
+        LeafPageManager,
         BasePageManager,
         FreePageManager,
         OverflowPageManager
@@ -51,11 +54,9 @@ class Pager {
     // NOTE(andrew): create_page overload is specifically for creating overflow page
     PageNumber create_page(PagerPageType page_type, std::vector<std::byte> payload);
 
-    // Methods for setting data
     void write_data(std::vector<std::byte> buffer);
     void set_num_pages(PageNumber new_num_pages);
 
-    // Page freelist
     void insert_freelist(PageNumber pgno);
     PageNumber pop_freelist();
     PageNumber peek_freelist();
