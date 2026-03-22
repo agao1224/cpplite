@@ -1,6 +1,4 @@
 #include <cstddef>
-#include <random>
-#include <chrono>
 #include <gtest/gtest.h>
 
 #include "db_test_fixture.h"

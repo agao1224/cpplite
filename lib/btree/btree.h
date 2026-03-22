@@ -6,7 +6,8 @@
 
 #pragma once
 
-typedef std::stack<std::pair<PageNumber, size_t>> BTreeCursorStack;
+typedef std::pair<PageNumber, size_t> BTreeCursorStackElt;
+typedef std::stack<BTreeCursorStackElt> BTreeCursorStack;
 
 class BTreeCursor {
   private:
@@ -17,6 +18,10 @@ class BTreeCursor {
   public:
     BTreeCursor(Pager* pager, PageNumber root_pgno);
     ~BTreeCursor();
+
+    BTreeCursorStack get_cursor_stack() const { return cursor_; }
+    Pager* get_pager() const { return pager_; }
+    PageNumber get_root_pgno() const { return root_pgno_; }
 
     void move_to_first();
     void move_to_last();

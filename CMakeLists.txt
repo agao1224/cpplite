@@ -41,6 +41,7 @@ enable_testing()
 
 file(GLOB VFS_TEST_SOURCES tests/vfs/*.cpp)
 file(GLOB PAGER_TEST_SOURCES tests/pager/*.cpp)
+file(GLOB BTREE_TEST_SOURCES tests/btree/*.cpp)
 
 add_executable(
   vfs_tests
@@ -70,6 +71,26 @@ add_executable(
   lib/pager/overflow_page/overflow_page_manager.cpp
 )
 
+add_executable(
+  btree_tests
+  tests/test_main.cpp
+  ${BTREE_TEST_SOURCES}
+  tests/test_utils.h
+  tests/test_utils.cpp
+  tests/db_test_fixture.h
+  lib/vfs/osfile.h
+  lib/vfs/osfile.cpp
+  lib/pager/pager.h
+  lib/pager/pager.cpp
+  lib/pager/first_page/first_page_manager.cpp
+  lib/pager/free_page/free_page_manager.cpp
+  lib/pager/node_page/node_page_manager.cpp
+  lib/pager/leaf_page/leaf_page_manager.cpp
+  lib/pager/overflow_page/overflow_page_manager.cpp
+  lib/btree/btree.h
+  lib/btree/btree.cpp
+)
+
 target_link_libraries(
   vfs_tests
   GTest::gtest
@@ -80,6 +101,12 @@ target_link_libraries(
   GTest::gtest
 )
 
+target_link_libraries(
+  btree_tests
+  GTest::gtest
+)
+
 include(GoogleTest)
 gtest_discover_tests(vfs_tests)
 gtest_discover_tests(pager_tests)
+gtest_discover_tests(btree_tests)
