@@ -1,7 +1,6 @@
 #include <string>
 #include <cassert>
 #include <vector>
-#include <iostream>
 #include <yaml-cpp/yaml.h>
 
 #include "pager/base_page.h"
