@@ -39,6 +39,8 @@ class BTreeCursor {
     bool is_valid() const;
 
     DefaultPagerKey current_key() const;
+    PageNumber current_pgno() const;
+    PageNumber current_record_pgno() const;
     std::vector<std::byte> current_value() const;
 
     bool insert(DefaultPagerKey key, std::vector<std::byte> value);

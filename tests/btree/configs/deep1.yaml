@@ -1,0 +1,106 @@
+# Structure:
+#                          [10]
+#                        /      \
+#                  [5]                [15]
+#                 /   \             /    \
+#              [3]    [8]        [  13  ]    [   18   ]
+#              / \    /   \        /      \       /     \
+#          [1,2][3,4][5,7][8,9] [10,12][13,14][15,17][18,20]
+root:
+  page_type: internal
+  cells: [10]
+  children: [left, right]
+
+left:
+  page_type: internal
+  cells: [5]
+  children: [ll, lr]
+
+right:
+  page_type: internal
+  cells: [15]
+  children: [rl, rr]
+
+ll:
+  page_type: internal
+  cells: [3]
+  children: [leaf1, leaf2]
+
+lr:
+  page_type: internal
+  cells: [8]
+  children: [leaf3, leaf4]
+
+rl:
+  page_type: internal
+  cells: [13]
+  children: [leaf5, leaf6]
+
+rr:
+  page_type: internal
+  cells: [18]
+  children: [leaf7, leaf8]
+
+leaf1:
+  page_type: leaf
+  cells:
+  - key: 1
+    payload: "1"
+  - key: 2
+    payload: "2"
+
+leaf2:
+  page_type: leaf
+  cells:
+  - key: 3
+    payload: "3"
+  - key: 4
+    payload: "4"
+
+leaf3:
+  page_type: leaf
+  cells:
+  - key: 5
+    payload: "5"
+  - key: 7
+    payload: "7"
+
+leaf4:
+  page_type: leaf
+  cells:
+  - key: 8
+    payload: "8"
+  - key: 9
+    payload: "9"
+
+leaf5:
+  page_type: leaf
+  cells:
+  - key: 10
+    payload: "10"
+  - key: 12
+    payload: "12"
+
+leaf6:
+  page_type: leaf
+  cells:
+  - key: 13
+    payload: "13"
+  - key: 14
+    payload: "14"
+
+leaf7:
+  page_type: leaf
+  cells:
+  - key: 15
+    payload: "15"
+  - key: 17
+    payload: "17"
+
+leaf8:
+  page_type: leaf
+  cells:
+  - key: 18
+    payload: "18"
+  - key: 20
+    payload: "20"

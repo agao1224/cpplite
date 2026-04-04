@@ -1,4 +1,6 @@
 #include <cassert>
+#include <stdexcept>
+#include <iostream>
 
 #include "btree.h"
 #include "pager/base_page.h"
@@ -94,10 +96,10 @@ size_t find_child_to_traverse(DefaultPagerKey target_key, std::vector<NodeCell_t
   size_t hi = cells.size();
   while (lo < hi) {
     size_t mid = lo + (hi - lo)/2;
-    if (target_key <= cells[mid].key) hi = mid;
+    if (target_key < cells[mid].key) hi = mid;
     else lo = mid+1;
   }
-  return lo+1;
+  return lo;
 }
 
 std::optional<size_t> find_matching_leaf_cell(DefaultPagerKey target_key, std::vector<LeafCell_t> cells) {
@@ -158,4 +160,48 @@ bool BTreeCursor::move_to_key(DefaultPagerKey key) {
   }
   cursor_ = candidate_cursor;
   return true;
+}
+
+DefaultPagerKey BTreeCursor::current_key() const {
+  if (cursor_.size() == 0)
+    throw new std::runtime_error("[btree:current_key]: cursor is empty");
+
+  BTreeCursorStackElt curr = cursor_.top();
+  PagerPageType page_type = pager_->get_page_type(curr.first);
+  if (page_type != PAGER_LEAF_PAGE)
+    throw new std::runtime_error("[btree:current_key]: Invalid page_type found");
+
+  LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
+  if (0 <= curr.second && curr.second < lpm.cells_.size())
+    return lpm.cells_[curr.second].key;
+
+  throw new std::runtime_error("[btree:current_key]: Cell index out of range");
+}
+
+PageNumber BTreeCursor::current_pgno() const {
+  if (cursor_.size() == 0)
+    throw new std::runtime_error("[btree:current_pgno]: cursor is empty");
+
+  BTreeCursorStackElt curr = cursor_.top();
+  PagerPageType page_type = pager_->get_page_type(curr.first);
+  if (page_type != PAGER_LEAF_PAGE)
+    throw new std::runtime_error("[btree:current_pgno]: Invalid page_type found");
+
+  return curr.first;
+}
+
+PageNumber BTreeCursor::current_record_pgno() const {
+  if (cursor_.size() == 0)
+    throw new std::runtime_error("[btree:current_record_pgno]: cursor is empty");
+
+  BTreeCursorStackElt curr = cursor_.top();
+  PagerPageType page_type = pager_->get_page_type(curr.first);
+  if (page_type != PAGER_LEAF_PAGE)
+    throw new std::runtime_error("[btree:current_record_pgno]: Invalid page_type found");
+
+  LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
+  if (0 <= curr.second && curr.second < lpm.cells_.size())
+    return lpm.cells_[curr.second].record_page;
+
+  throw new std::runtime_error("[btree:current_record_pgno]: Cell index out of range");
 }

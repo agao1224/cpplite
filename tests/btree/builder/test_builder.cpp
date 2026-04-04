@@ -4,28 +4,10 @@
 
 #include <gtest/gtest.h>
 
-#include "pager/overflow_page/overflow_page.h"
 #include "shared.h"
 #include "db_test_fixture.h"
+#include "btree/btree_test_utils.h"
 #include "btree/builder/btree_builder.h"
-
-using namespace std;
-
-static std::vector<std::byte> str_to_bytes(const std::string& s) {
-  return {
-    reinterpret_cast<const std::byte*>(s.data()),
-    reinterpret_cast<const std::byte*>(s.data() + s.size())
-  };
-}
-
-static void assert_payload(
-  PageNumber record_page,
-  std::shared_ptr<OsFile> db_file_ptr,
-  const std::string& expected
-) {
-  OverflowPageManager opm(record_page, db_file_ptr);
-  EXPECT_EQ(opm.get_overflow_content(), str_to_bytes(expected));
-}
 
 static void assert_leaf_cells(
   const LeafPageManager& lpm,
