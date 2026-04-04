@@ -65,7 +65,7 @@ LeafPageManager::LeafPageManager(PageNumber pgno, std::shared_ptr<OsFile> db_fil
 
 LeafPageManager::~LeafPageManager() = default;
 
-bool LeafPageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data) {
+bool LeafPageManager::insert_cell(DefaultPagerKey key, std::vector<std::byte> cell_data) {
   assert(num_cells_ == cells_.size());
   assert(db_file_ptr_ != nullptr);
   assert(pager_ != nullptr);
@@ -76,7 +76,7 @@ bool LeafPageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data
   assert(sizeof(LeafCell_t) <= total_bytes_free_);
   LeafCell_t leaf_cell;
   uint32_t payload_size = cell_data.size();
-  leaf_cell.size = payload_size;
+  leaf_cell.payload_size = payload_size;
   leaf_cell.key = key;
   leaf_cell.record_page = pager_->create_page(PAGER_OVERFLOW_PAGE, cell_data);
 
@@ -125,7 +125,7 @@ bool LeafPageManager::insert_cell(uint32_t key, std::vector<std::byte> cell_data
   return true;
 }
 
-std::optional<std::vector<std::byte>> LeafPageManager::get_payload(uint32_t key) {
+std::optional<std::vector<std::byte>> LeafPageManager::get_payload(DefaultPagerKey key) {
   assert(db_file_ptr_ != nullptr);
 
   std::optional<LeafCell_t> cell = std::nullopt;
@@ -139,7 +139,7 @@ std::optional<std::vector<std::byte>> LeafPageManager::get_payload(uint32_t key)
   if (!cell.has_value())
     return std::nullopt;
 
-  uint32_t num_payload_bytes = cell->size;
+  uint32_t num_payload_bytes = cell->payload_size;
   std::vector<std::byte> payload;
   payload.reserve(num_payload_bytes);
 

@@ -30,8 +30,7 @@ TEST_F(PagerPageManagerTest, FirstPageManagerSetters) {
   ASSERT_EQ(std::filesystem::file_size(db_filename), PAGE_SIZE);
 
   pager->seek_page(1);
-  ASSERT_TRUE(pager->page_manager_.has_value());
-  FirstPageManager fpm = std::get<FirstPageManager>(pager->page_manager_.value());
+  FirstPageManager fpm = std::get<FirstPageManager>(pager->page_manager_);
   fpm.set_num_pages(3);
   ASSERT_EQ(fpm.num_pages_, 3);
   fpm.set_free_page_head(10);

@@ -10,11 +10,11 @@
 #pragma once
 
 typedef struct NodeCell {
-  uint32_t key;
+  DefaultPagerKey key;
   PageNumber left_child;
 
   NodeCell() = default;
-  NodeCell(uint32_t key_, PageNumber left_child_) :
+  NodeCell(DefaultPagerKey key_, PageNumber left_child_) :
     key(key_), left_child(left_child_) {}
 
   std::vector<std::byte> to_bytes() const {
@@ -61,7 +61,7 @@ typedef struct PagerNodePageHeader : public PagerBasePageHeader {
 
 class NodePageManager: public BasePageManager {
   private:
-    std::optional<size_t> find_node_cell_idx(uint32_t key);
+    std::optional<size_t> find_node_cell_idx(DefaultPagerKey key);
 
   public:
     NodePageManager(PageNumber pgno, std::shared_ptr<OsFile> db_file_ptr);
@@ -72,8 +72,11 @@ class NodePageManager: public BasePageManager {
     uint16_t total_bytes_free_;
     PageNumber right_child_;
 
-    bool insert_node_cell(uint32_t key);
-    void set_cell_left_child(uint32_t key, PageNumber left_child_pgno);
+    bool insert_node_cell(DefaultPagerKey key);
+    void set_cell_left_child(DefaultPagerKey key, PageNumber left_child_pgno);
     void set_node_right_child(PageNumber right_child_pgno);
     size_t get_free_space();
 };
+
+const size_t NODE_MAX_CELLS = (PAGE_SIZE - sizeof(PagerNodePageHeader_t)) / sizeof(NodeCell_t);
+const size_t NODE_MIN_CELLS = NODE_MAX_CELLS / 2;

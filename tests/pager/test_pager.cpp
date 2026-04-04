@@ -40,8 +40,7 @@ TEST_F(PagerTest, NodePageBasic) {
 
   for (size_t i = 0; i < 1000; i++) {
     pager->seek_page(i+2);
-    ASSERT_TRUE(pager->page_manager_.has_value());
-    auto page_manager = std::get<NodePageManager>(pager->page_manager_.value());
+    auto page_manager = std::get<NodePageManager>(pager->page_manager_);
     ASSERT_EQ(page_manager.page_type_, PAGER_NODE_PAGE);
     ASSERT_EQ(page_manager.checksum_, CHECKSUM);
     ASSERT_EQ(page_manager.pgno_, i+2);
@@ -56,8 +55,7 @@ TEST_F(PagerTest, FreePageBasic) {
 
   for (size_t i = 0; i < 1000; i++) {
     pager->seek_page(i+2);
-    ASSERT_TRUE(pager->page_manager_.has_value());
-    auto page_manager = std::get<FreePageManager>(pager->page_manager_.value());
+    auto page_manager = std::get<FreePageManager>(pager->page_manager_);
     ASSERT_EQ(page_manager.page_type_, PAGER_FREE_PAGE);
     ASSERT_EQ(page_manager.checksum_, CHECKSUM);
     ASSERT_EQ(page_manager.pgno_, i+2);
@@ -81,8 +79,7 @@ TEST_F(PagerTest, FreePageListTraversal) {
   size_t counted_free_pages = 0;
   while (free_page_head != NULL_PAGE) {
     pager->seek_page(free_page_head);
-    ASSERT_TRUE(pager->page_manager_.has_value());
-    FreePageManager fpm = std::get<FreePageManager>(pager->page_manager_.value());
+    FreePageManager fpm = std::get<FreePageManager>(pager->page_manager_);
     free_page_head = fpm.get_next_free_page();
     counted_free_pages++;
   }

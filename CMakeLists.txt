@@ -25,6 +25,14 @@ FetchContent_Declare(
   GIT_TAG 4.13.2
   SOURCE_SUBDIR runtime/Cpp
 )
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG 0.8.0
+)
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(yaml-cpp)
+
 set(ANTLR4_INSTALL OFF CACHE BOOL "" FORCE)
 set(WITH_DEMO OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(antlr4_runtime)
@@ -41,6 +49,7 @@ enable_testing()
 
 file(GLOB VFS_TEST_SOURCES tests/vfs/*.cpp)
 file(GLOB PAGER_TEST_SOURCES tests/pager/*.cpp)
+file(GLOB_RECURSE BTREE_TEST_SOURCES tests/btree/*.cpp)
 
 add_executable(
   vfs_tests
@@ -70,6 +79,26 @@ add_executable(
   lib/pager/overflow_page/overflow_page_manager.cpp
 )
 
+add_executable(
+  btree_tests
+  tests/test_main.cpp
+  ${BTREE_TEST_SOURCES}
+  tests/test_utils.h
+  tests/test_utils.cpp
+  tests/db_test_fixture.h
+  lib/vfs/osfile.h
+  lib/vfs/osfile.cpp
+  lib/pager/pager.h
+  lib/pager/pager.cpp
+  lib/pager/first_page/first_page_manager.cpp
+  lib/pager/free_page/free_page_manager.cpp
+  lib/pager/node_page/node_page_manager.cpp
+  lib/pager/leaf_page/leaf_page_manager.cpp
+  lib/pager/overflow_page/overflow_page_manager.cpp
+  lib/btree/btree.h
+  lib/btree/btree.cpp
+)
+
 target_link_libraries(
   vfs_tests
   GTest::gtest
@@ -80,6 +109,23 @@ target_link_libraries(
   GTest::gtest
 )
 
+target_link_libraries(
+  btree_tests
+  GTest::gtest
+  yaml-cpp::yaml-cpp
+)
+
+target_include_directories(btree_tests PRIVATE
+  tests/btree/btree_builder
+)
+
+add_custom_command(TARGET btree_tests POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/tests/btree/configs
+    ${CMAKE_BINARY_DIR}/tests/btree/configs
+)
+
 include(GoogleTest)
 gtest_discover_tests(vfs_tests)
 gtest_discover_tests(pager_tests)
+gtest_discover_tests(btree_tests)

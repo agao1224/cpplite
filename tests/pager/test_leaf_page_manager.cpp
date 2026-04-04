@@ -1,6 +1,4 @@
 #include <cstddef>
-#include <random>
-#include <chrono>
 #include <gtest/gtest.h>
 
 #include "db_test_fixture.h"
@@ -42,7 +40,7 @@ TEST_F(LeafPageManagerTest, LeafPageManagerInsert1) {
 
   LeafCell_t cell = lpm.cells_[0];
   ASSERT_EQ(cell.key, 1);
-  ASSERT_EQ(cell.size, random_payload.size());
+  ASSERT_EQ(cell.payload_size, random_payload.size());
   ASSERT_EQ(cell.record_page, 3);
 }
 
@@ -77,7 +75,7 @@ TEST_F(LeafPageManagerTest, LeafPageManagerInsert3) {
     ASSERT_EQ(lpm.num_cells_, i+1);
     LeafCell_t cell = lpm.cells_[i];
 
-    ASSERT_EQ(cell.size, random_payload.size());
+    ASSERT_EQ(cell.payload_size, random_payload.size());
     ASSERT_NE(cell.record_page, NULL_PAGE);
 
     PageNumber op = cell.record_page;

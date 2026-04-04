@@ -10,8 +10,8 @@
 #pragma once
 
 typedef struct LeafCell {
-  uint32_t size;
-  uint32_t key;
+  uint32_t payload_size;
+  DefaultPagerKey key;
 
   PageNumber record_page;
   std::vector<std::byte> to_bytes() const {
@@ -74,8 +74,8 @@ class LeafPageManager: public BasePageManager {
     PageNumber prev_page_;
     PageNumber next_page_;
 
-    bool insert_cell(uint32_t key, std::vector<std::byte> cell_data);
-    std::optional<std::vector<std::byte>> get_payload(uint32_t key);
+    bool insert_cell(DefaultPagerKey key, std::vector<std::byte> cell_data);
+    std::optional<std::vector<std::byte>> get_payload(DefaultPagerKey key);
     size_t get_free_space();
 
     PageNumber prev_page();
@@ -84,3 +84,5 @@ class LeafPageManager: public BasePageManager {
     void set_next_page(PageNumber pgno);
 };
 
+const size_t LEAF_MAX_CELLS = (PAGE_SIZE - sizeof(PagerLeafPageHeader_t)) / sizeof(LeafCell_t);
+const size_t LEAF_MIN_CELLS = LEAF_MAX_CELLS / 2;

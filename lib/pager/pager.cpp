@@ -46,7 +46,7 @@ void Pager::seek_page(PageNumber pgno) {
 
   if (pgno == PAGER_FIRST_PAGE) {
     FirstPageManager fpm(db_file_ptr_);
-    page_manager_ = std::make_optional<FirstPageManager>(fpm);
+    page_manager_ = fpm;
     return;
   }
 
@@ -64,27 +64,27 @@ void Pager::seek_page(PageNumber pgno) {
   switch (page_header.page_type) {
     case PAGER_FIRST_PAGE: {
       FirstPageManager fpm(db_file_ptr_);
-      page_manager_ = std::make_optional<FirstPageManager>(fpm);
+      page_manager_ = fpm;
       break;
     }
     case PAGER_NODE_PAGE: {
       NodePageManager npm(pgno, db_file_ptr_);
-      page_manager_ = std::make_optional<NodePageManager>(npm);
+      page_manager_ = npm;
       break;
     }
     case PAGER_LEAF_PAGE: {
       LeafPageManager lpm(pgno, db_file_ptr_, this);
-      page_manager_ = std::make_optional<LeafPageManager>(lpm);
+      page_manager_ = lpm;
       break;
     }
     case PAGER_FREE_PAGE: {
       FreePageManager fpm(pgno, db_file_ptr_);
-      page_manager_ = std::make_optional<FreePageManager>(fpm);
+      page_manager_ = fpm;
       break;
     }
     case PAGER_OVERFLOW_PAGE: {
       OverflowPageManager opm(pgno, db_file_ptr_);
-      page_manager_ = std::make_optional<OverflowPageManager>(opm);
+      page_manager_ = opm;
       break;
     }
     default:
@@ -328,11 +328,27 @@ void Pager::set_num_pages(PageNumber new_num_pages) {
   assert(db_file_ptr_ != nullptr);
 
   FirstPageManager fpm;
-  if (!page_manager_.has_value()) {
-    fpm = FirstPageManager(db_file_ptr_);
-  } else {
-    fpm = std::get<FirstPageManager>(page_manager_.value());
-  }
-
+  fpm = std::get<FirstPageManager>(page_manager_);
   fpm.set_num_pages(new_num_pages);
+}
+
+PagerPageType Pager::get_page_type(PageNumber pgno) {
+  assert(db_file_ptr_ != nullptr);
+  assert(pgno != NULL_PAGE);
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+
+  bool seek_ok = db_file.os_seek((pgno-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[Pager::get_page_type]: Failed to seek");
+
+  std::vector<std::byte> page_contents(sizeof(PagerBasePageHeader_t));
+  ssize_t bytes_read = db_file.os_read(page_contents, sizeof(PagerBasePageHeader_t));
+  PagerBasePageHeader_t page_header(page_contents);
+  db_file.os_close();
+
+  if (page_header.checksum != CHECKSUM)
+    throw std::runtime_error("[Pager:get_page_type]: Checksum failed");
+  return page_header.page_type;
 }
