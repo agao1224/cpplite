@@ -1,0 +1,30 @@
+root:
+  page_type: internal
+  cells: [4, 12]
+  children: [node1, node2, node3]
+
+node1:
+  page_type: leaf
+  cells:
+  - key: 1
+    payload: "111"
+  - key: 3
+    payload: "333"
+
+node2:
+  page_type: leaf
+  cells:
+  - key: 5
+    payload: "555"
+  - key: 9
+    payload: "999"
+  - key: 10
+    payload: "101010"
+
+node3:
+  page_type: leaf
+  cells:
+  - key: 12
+    payload: "121212"
+  - key: 13
+    payload: "131313"

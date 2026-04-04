@@ -9,14 +9,22 @@
 typedef std::pair<PageNumber, size_t> BTreeCursorStackElt;
 typedef std::stack<BTreeCursorStackElt> BTreeCursorStack;
 
+struct BTreeConfig {
+  size_t node_max_cells = NODE_MAX_CELLS;
+  size_t node_min_cells = NODE_MIN_CELLS;
+  size_t leaf_max_cells = LEAF_MAX_CELLS;
+  size_t leaf_min_cells = LEAF_MIN_CELLS;
+};
+
 class BTreeCursor {
   private:
     std::stack<std::pair<PageNumber, size_t>> cursor_;
     Pager* pager_;
     PageNumber root_pgno_;
+    BTreeConfig config_;
 
   public:
-    BTreeCursor(Pager* pager, PageNumber root_pgno);
+    BTreeCursor(Pager* pager, PageNumber root_pgno, BTreeConfig config = {});
     ~BTreeCursor();
 
     BTreeCursorStack get_cursor_stack() const { return cursor_; }

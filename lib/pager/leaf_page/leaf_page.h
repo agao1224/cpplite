@@ -10,7 +10,7 @@
 #pragma once
 
 typedef struct LeafCell {
-  uint32_t size;
+  uint32_t payload_size;
   DefaultPagerKey key;
 
   PageNumber record_page;
@@ -84,3 +84,5 @@ class LeafPageManager: public BasePageManager {
     void set_next_page(PageNumber pgno);
 };
 
+const size_t LEAF_MAX_CELLS = (PAGE_SIZE - sizeof(PagerLeafPageHeader_t)) / sizeof(LeafCell_t);
+const size_t LEAF_MIN_CELLS = LEAF_MAX_CELLS / 2;

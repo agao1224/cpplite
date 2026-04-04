@@ -77,3 +77,6 @@ class NodePageManager: public BasePageManager {
     void set_node_right_child(PageNumber right_child_pgno);
     size_t get_free_space();
 };
+
+const size_t NODE_MAX_CELLS = (PAGE_SIZE - sizeof(PagerNodePageHeader_t)) / sizeof(NodeCell_t);
+const size_t NODE_MIN_CELLS = NODE_MAX_CELLS / 2;

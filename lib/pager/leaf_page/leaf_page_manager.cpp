@@ -76,7 +76,7 @@ bool LeafPageManager::insert_cell(DefaultPagerKey key, std::vector<std::byte> ce
   assert(sizeof(LeafCell_t) <= total_bytes_free_);
   LeafCell_t leaf_cell;
   uint32_t payload_size = cell_data.size();
-  leaf_cell.size = payload_size;
+  leaf_cell.payload_size = payload_size;
   leaf_cell.key = key;
   leaf_cell.record_page = pager_->create_page(PAGER_OVERFLOW_PAGE, cell_data);
 
@@ -139,7 +139,7 @@ std::optional<std::vector<std::byte>> LeafPageManager::get_payload(DefaultPagerK
   if (!cell.has_value())
     return std::nullopt;
 
-  uint32_t num_payload_bytes = cell->size;
+  uint32_t num_payload_bytes = cell->payload_size;
   std::vector<std::byte> payload;
   payload.reserve(num_payload_bytes);
 

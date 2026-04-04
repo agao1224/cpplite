@@ -31,7 +31,6 @@ class Pager {
      * and we assume that it will always exist (no need to
      * create upon init)
      */
-    std::shared_ptr<OsFile> db_file_ptr_ = nullptr;
     bool page_open_ = false;
     PageNumber curr_page_num_ = 1;
     PageNumber total_num_pages_ = 1;
@@ -43,6 +42,7 @@ class Pager {
 
   public:
   // https://medium.com/technology-in-essence/how-sqlite-database-works-b10ac80e4f07
+    std::shared_ptr<OsFile> db_file_ptr_ = nullptr;
     PageManager page_manager_;
     Pager(std::string db_filename);
     ~Pager() = default;

@@ -5,7 +5,7 @@
 #include "pager/leaf_page/leaf_page.h"
 #include "pager/node_page/node_page.h"
 
-BTreeCursor::BTreeCursor(Pager* pager, PageNumber root_pgno) {
+BTreeCursor::BTreeCursor(Pager* pager, PageNumber root_pgno, BTreeConfig config) : config_(config) {
   assert(pager != nullptr);
 
   pager->seek_page(root_pgno);

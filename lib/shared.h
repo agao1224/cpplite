@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cstddef>
+#include <limits>
 
 #pragma once
 
@@ -11,6 +12,8 @@ const uint32_t CHECKSUM = 123456;
 template<typename T>
 struct PagerKey {
   T value;
+  static constexpr T max_value = std::numeric_limits<T>::max();
+  static constexpr T min_value = std::numeric_limits<T>::min();
 
   PagerKey() = default;
   PagerKey(T v) : value(v) {}
