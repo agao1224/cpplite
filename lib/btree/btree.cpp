@@ -1,6 +1,5 @@
 #include <cassert>
 #include <stdexcept>
-#include <iostream>
 #include <utility>
 
 #include "btree.h"
@@ -189,7 +188,7 @@ bool BTreeCursor::prev() {
   // NOTE(andrew): pop leaf and walk up until we find an ancestor with a nonzero
   // cell index (meaning there's a left subtree to descend into)
   cursor_.pop();
-  size_t curr_cell_idx = 0;
+  size_t curr_cell_idx = curr.second;
   while (cursor_.size() > 0) {
     curr = cursor_.top();
     curr_cell_idx = curr.second;
@@ -225,6 +224,79 @@ bool BTreeCursor::prev() {
     new_child = std::make_pair(child_page, npm.num_cells_);
     cursor_.push(new_child);
     child_page = npm.right_child_;
+  }
+  return true;
+}
+
+bool BTreeCursor::next() {
+  assert(pager_ != nullptr);
+  assert(cursor_.size() > 0);
+
+  BTreeCursorStackElt curr = cursor_.top();
+  assert(pager_->get_page_type(curr.first) == PAGER_LEAF_PAGE);
+
+  LeafPageManager curr_lpm(curr.first, pager_->db_file_ptr_, pager_);
+  assert(curr_lpm.cells_.size() == curr_lpm.num_cells_);
+  assert(0 <= curr.second && curr.second < curr_lpm.num_cells_);
+
+  if (curr.second < curr_lpm.num_cells_ - 1) {
+    cursor_.pop();
+    BTreeCursorStackElt new_curr = std::make_pair(
+      curr.first,
+      curr.second+1
+    );
+    cursor_.push(new_curr);
+    return true;
+  }
+
+  cursor_.pop();
+
+
+  assert(curr.second == curr_lpm.num_cells_-1);
+  size_t curr_cell_idx = curr.second;
+  while (cursor_.size() > 0) {
+    curr = cursor_.top();
+    assert(pager_->get_page_type(curr.first) == PAGER_NODE_PAGE);
+    NodePageManager npm(curr.first, pager_->db_file_ptr_);
+    if (curr.second < npm.num_cells_) break;
+    cursor_.pop();
+  }
+
+  // NOTE(andrew): already at rightmost cell in tree
+  if (cursor_.size() == 0) return false;
+
+  NodePageManager npm(curr.first, pager_->db_file_ptr_);
+  assert(curr.second < npm.num_cells_);
+
+  cursor_.pop();
+  BTreeCursorStackElt new_ancestor = std::make_pair(
+    curr.first,
+    curr.second+1
+  );
+  cursor_.push(new_ancestor);
+
+  assert(pager_->get_page_type(new_ancestor.first) == PAGER_NODE_PAGE);
+  npm = NodePageManager(new_ancestor.first, pager_->db_file_ptr_);
+  
+  PageNumber child_page;
+  if (new_ancestor.second == npm.num_cells_)
+    child_page = npm.right_child_;
+  else
+    child_page = npm.cells_[new_ancestor.second].left_child;
+
+  BTreeCursorStackElt new_child;
+  while (true) {
+    if (pager_->get_page_type(child_page) == PAGER_LEAF_PAGE) {
+      LeafPageManager lpm(child_page, pager_->db_file_ptr_, pager_);
+      new_child = std::make_pair(child_page, 0);
+      cursor_.push(new_child);
+      break;
+    }
+
+    npm = NodePageManager(child_page, pager_->db_file_ptr_);
+    new_child = std::make_pair(child_page, 0);
+    cursor_.push(new_child);
+    child_page = npm.cells_[0].left_child;
   }
   return true;
 }

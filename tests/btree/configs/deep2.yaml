@@ -1,0 +1,537 @@
+# Structure (depth 4, internal min/max cells: 3/6, leaf min/max cells: 3/6):
+#
+# Level-3 cell counts vary: a1=3, a2=4, a3=5, a4=3, b1=3, b2=5, b3=4, b4=6, b5=3
+#
+#                                        [58]
+#                                       /     \
+#                             [13,28,46]         [70,88,103,124]
+#                            /   |   |  \        /    |    |    |    \
+#                     [4,7,10] [16,19,22,25] [31,34,37,40,43] [49,52,55]
+#                      /|||      /||||           /|||||             /|||
+#                  (leaf01-04)(leaf05-09)    (leaf10-15)        (leaf16-19)
+#
+#                              [61,64,67] [73,76,79,82,85] [91,94,97,100] [106,109,112,115,118,121] [127,130,133]
+#                               /|||          /|||||           /||||              /|||||||                /|||
+#                          (leaf20-23)    (leaf24-29)      (leaf30-34)        (leaf35-41)           (leaf42-45)
+#
+# Key ranges per leaf (3 keys each):
+#   leaf01:  1-3    leaf10: 28-30   leaf20: 58-60   leaf30: 88-90   leaf39: 115-117
+#   leaf02:  4-6    leaf11: 31-33   leaf21: 61-63   leaf31: 91-93   leaf40: 118-120
+#   leaf03:  7-9    leaf12: 34-36   leaf22: 64-66   leaf32: 94-96   leaf41: 121-123
+#   leaf04: 10-12   leaf13: 37-39   leaf23: 67-69   leaf33: 97-99   leaf42: 124-126
+#   leaf05: 13-15   leaf14: 40-42   leaf24: 70-72   leaf34: 100-102 leaf43: 127-129
+#   leaf06: 16-18   leaf15: 43-45   leaf25: 73-75   leaf35: 103-105 leaf44: 130-132
+#   leaf07: 19-21   leaf16: 46-48   leaf26: 76-78   leaf36: 106-108 leaf45: 133-135
+#   leaf08: 22-24   leaf17: 49-51   leaf27: 79-81   leaf37: 109-111
+#   leaf09: 25-27   leaf18: 52-54   leaf28: 82-84   leaf38: 112-114
+#                   leaf19: 55-57   leaf29: 85-87
+
+root:
+  page_type: internal
+  cells: [58]
+  children: [left, right]
+
+left:
+  page_type: internal
+  cells: [13, 28, 46]
+  children: [a1, a2, a3, a4]
+
+right:
+  page_type: internal
+  cells: [70, 88, 103, 124]
+  children: [b1, b2, b3, b4, b5]
+
+a1:
+  page_type: internal
+  cells: [4, 7, 10]
+  children: [leaf01, leaf02, leaf03, leaf04]
+
+a2:
+  page_type: internal
+  cells: [16, 19, 22, 25]
+  children: [leaf05, leaf06, leaf07, leaf08, leaf09]
+
+a3:
+  page_type: internal
+  cells: [31, 34, 37, 40, 43]
+  children: [leaf10, leaf11, leaf12, leaf13, leaf14, leaf15]
+
+a4:
+  page_type: internal
+  cells: [49, 52, 55]
+  children: [leaf16, leaf17, leaf18, leaf19]
+
+b1:
+  page_type: internal
+  cells: [61, 64, 67]
+  children: [leaf20, leaf21, leaf22, leaf23]
+
+b2:
+  page_type: internal
+  cells: [73, 76, 79, 82, 85]
+  children: [leaf24, leaf25, leaf26, leaf27, leaf28, leaf29]
+
+b3:
+  page_type: internal
+  cells: [91, 94, 97, 100]
+  children: [leaf30, leaf31, leaf32, leaf33, leaf34]
+
+b4:
+  page_type: internal
+  cells: [106, 109, 112, 115, 118, 121]
+  children: [leaf35, leaf36, leaf37, leaf38, leaf39, leaf40, leaf41]
+
+b5:
+  page_type: internal
+  cells: [127, 130, 133]
+  children: [leaf42, leaf43, leaf44, leaf45]
+
+leaf01:
+  page_type: leaf
+  cells:
+  - key: 1
+    payload: "1"
+  - key: 2
+    payload: "2"
+  - key: 3
+    payload: "3"
+
+leaf02:
+  page_type: leaf
+  cells:
+  - key: 4
+    payload: "4"
+  - key: 5
+    payload: "5"
+  - key: 6
+    payload: "6"
+
+leaf03:
+  page_type: leaf
+  cells:
+  - key: 7
+    payload: "7"
+  - key: 8
+    payload: "8"
+  - key: 9
+    payload: "9"
+
+leaf04:
+  page_type: leaf
+  cells:
+  - key: 10
+    payload: "10"
+  - key: 11
+    payload: "11"
+  - key: 12
+    payload: "12"
+
+leaf05:
+  page_type: leaf
+  cells:
+  - key: 13
+    payload: "13"
+  - key: 14
+    payload: "14"
+  - key: 15
+    payload: "15"
+
+leaf06:
+  page_type: leaf
+  cells:
+  - key: 16
+    payload: "16"
+  - key: 17
+    payload: "17"
+  - key: 18
+    payload: "18"
+
+leaf07:
+  page_type: leaf
+  cells:
+  - key: 19
+    payload: "19"
+  - key: 20
+    payload: "20"
+  - key: 21
+    payload: "21"
+
+leaf08:
+  page_type: leaf
+  cells:
+  - key: 22
+    payload: "22"
+  - key: 23
+    payload: "23"
+  - key: 24
+    payload: "24"
+
+leaf09:
+  page_type: leaf
+  cells:
+  - key: 25
+    payload: "25"
+  - key: 26
+    payload: "26"
+  - key: 27
+    payload: "27"
+
+leaf10:
+  page_type: leaf
+  cells:
+  - key: 28
+    payload: "28"
+  - key: 29
+    payload: "29"
+  - key: 30
+    payload: "30"
+
+leaf11:
+  page_type: leaf
+  cells:
+  - key: 31
+    payload: "31"
+  - key: 32
+    payload: "32"
+  - key: 33
+    payload: "33"
+
+leaf12:
+  page_type: leaf
+  cells:
+  - key: 34
+    payload: "34"
+  - key: 35
+    payload: "35"
+  - key: 36
+    payload: "36"
+
+leaf13:
+  page_type: leaf
+  cells:
+  - key: 37
+    payload: "37"
+  - key: 38
+    payload: "38"
+  - key: 39
+    payload: "39"
+
+leaf14:
+  page_type: leaf
+  cells:
+  - key: 40
+    payload: "40"
+  - key: 41
+    payload: "41"
+  - key: 42
+    payload: "42"
+
+leaf15:
+  page_type: leaf
+  cells:
+  - key: 43
+    payload: "43"
+  - key: 44
+    payload: "44"
+  - key: 45
+    payload: "45"
+
+leaf16:
+  page_type: leaf
+  cells:
+  - key: 46
+    payload: "46"
+  - key: 47
+    payload: "47"
+  - key: 48
+    payload: "48"
+
+leaf17:
+  page_type: leaf
+  cells:
+  - key: 49
+    payload: "49"
+  - key: 50
+    payload: "50"
+  - key: 51
+    payload: "51"
+
+leaf18:
+  page_type: leaf
+  cells:
+  - key: 52
+    payload: "52"
+  - key: 53
+    payload: "53"
+  - key: 54
+    payload: "54"
+
+leaf19:
+  page_type: leaf
+  cells:
+  - key: 55
+    payload: "55"
+  - key: 56
+    payload: "56"
+  - key: 57
+    payload: "57"
+
+leaf20:
+  page_type: leaf
+  cells:
+  - key: 58
+    payload: "58"
+  - key: 59
+    payload: "59"
+  - key: 60
+    payload: "60"
+
+leaf21:
+  page_type: leaf
+  cells:
+  - key: 61
+    payload: "61"
+  - key: 62
+    payload: "62"
+  - key: 63
+    payload: "63"
+
+leaf22:
+  page_type: leaf
+  cells:
+  - key: 64
+    payload: "64"
+  - key: 65
+    payload: "65"
+  - key: 66
+    payload: "66"
+
+leaf23:
+  page_type: leaf
+  cells:
+  - key: 67
+    payload: "67"
+  - key: 68
+    payload: "68"
+  - key: 69
+    payload: "69"
+
+leaf24:
+  page_type: leaf
+  cells:
+  - key: 70
+    payload: "70"
+  - key: 71
+    payload: "71"
+  - key: 72
+    payload: "72"
+
+leaf25:
+  page_type: leaf
+  cells:
+  - key: 73
+    payload: "73"
+  - key: 74
+    payload: "74"
+  - key: 75
+    payload: "75"
+
+leaf26:
+  page_type: leaf
+  cells:
+  - key: 76
+    payload: "76"
+  - key: 77
+    payload: "77"
+  - key: 78
+    payload: "78"
+
+leaf27:
+  page_type: leaf
+  cells:
+  - key: 79
+    payload: "79"
+  - key: 80
+    payload: "80"
+  - key: 81
+    payload: "81"
+
+leaf28:
+  page_type: leaf
+  cells:
+  - key: 82
+    payload: "82"
+  - key: 83
+    payload: "83"
+  - key: 84
+    payload: "84"
+
+leaf29:
+  page_type: leaf
+  cells:
+  - key: 85
+    payload: "85"
+  - key: 86
+    payload: "86"
+  - key: 87
+    payload: "87"
+
+leaf30:
+  page_type: leaf
+  cells:
+  - key: 88
+    payload: "88"
+  - key: 89
+    payload: "89"
+  - key: 90
+    payload: "90"
+
+leaf31:
+  page_type: leaf
+  cells:
+  - key: 91
+    payload: "91"
+  - key: 92
+    payload: "92"
+  - key: 93
+    payload: "93"
+
+leaf32:
+  page_type: leaf
+  cells:
+  - key: 94
+    payload: "94"
+  - key: 95
+    payload: "95"
+  - key: 96
+    payload: "96"
+
+leaf33:
+  page_type: leaf
+  cells:
+  - key: 97
+    payload: "97"
+  - key: 98
+    payload: "98"
+  - key: 99
+    payload: "99"
+
+leaf34:
+  page_type: leaf
+  cells:
+  - key: 100
+    payload: "100"
+  - key: 101
+    payload: "101"
+  - key: 102
+    payload: "102"
+
+leaf35:
+  page_type: leaf
+  cells:
+  - key: 103
+    payload: "103"
+  - key: 104
+    payload: "104"
+  - key: 105
+    payload: "105"
+
+leaf36:
+  page_type: leaf
+  cells:
+  - key: 106
+    payload: "106"
+  - key: 107
+    payload: "107"
+  - key: 108
+    payload: "108"
+
+leaf37:
+  page_type: leaf
+  cells:
+  - key: 109
+    payload: "109"
+  - key: 110
+    payload: "110"
+  - key: 111
+    payload: "111"
+
+leaf38:
+  page_type: leaf
+  cells:
+  - key: 112
+    payload: "112"
+  - key: 113
+    payload: "113"
+  - key: 114
+    payload: "114"
+
+leaf39:
+  page_type: leaf
+  cells:
+  - key: 115
+    payload: "115"
+  - key: 116
+    payload: "116"
+  - key: 117
+    payload: "117"
+
+leaf40:
+  page_type: leaf
+  cells:
+  - key: 118
+    payload: "118"
+  - key: 119
+    payload: "119"
+  - key: 120
+    payload: "120"
+
+leaf41:
+  page_type: leaf
+  cells:
+  - key: 121
+    payload: "121"
+  - key: 122
+    payload: "122"
+  - key: 123
+    payload: "123"
+
+leaf42:
+  page_type: leaf
+  cells:
+  - key: 124
+    payload: "124"
+  - key: 125
+    payload: "125"
+  - key: 126
+    payload: "126"
+
+leaf43:
+  page_type: leaf
+  cells:
+  - key: 127
+    payload: "127"
+  - key: 128
+    payload: "128"
+  - key: 129
+    payload: "129"
+
+leaf44:
+  page_type: leaf
+  cells:
+  - key: 130
+    payload: "130"
+  - key: 131
+    payload: "131"
+  - key: 132
+    payload: "132"
+
+leaf45:
+  page_type: leaf
+  cells:
+  - key: 133
+    payload: "133"
+  - key: 134
+    payload: "134"
+  - key: 135
+    payload: "135"
