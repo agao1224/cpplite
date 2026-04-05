@@ -34,8 +34,8 @@ class BTreeCursor {
     void move_to_first();
     void move_to_last();
     bool move_to_key(DefaultPagerKey key);
-    bool next();
     bool prev();
+    bool next();
     bool is_valid() const;
 
     DefaultPagerKey current_key() const;

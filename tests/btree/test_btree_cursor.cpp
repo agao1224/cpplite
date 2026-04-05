@@ -697,70 +697,158 @@ TEST_F(BTreeCursorTest, BTreePrevDeep1) {
   );
 
   BTreeCursor cursor(pager.get(), root_pgno, config);
+  BTreeCursorStack s;
+
+  cursor.move_to_key(1);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf1 = s.top().first; s.pop();
+  PageNumber pgno_ll    = s.top().first; s.pop();
+  PageNumber pgno_left  = s.top().first; s.pop();
+
+  cursor.move_to_key(3);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf2 = s.top().first;
+
+  cursor.move_to_key(5);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf3 = s.top().first; s.pop();
+  PageNumber pgno_lr    = s.top().first;
+
+  cursor.move_to_key(8);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf4 = s.top().first;
+
+  cursor.move_to_key(10);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf5 = s.top().first; s.pop();
+  PageNumber pgno_rl    = s.top().first; s.pop();
+  PageNumber pgno_right = s.top().first;
+
+  cursor.move_to_key(13);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf6 = s.top().first;
+
+  cursor.move_to_key(15);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf7 = s.top().first; s.pop();
+  PageNumber pgno_rr    = s.top().first;
+
+  cursor.move_to_key(18);
+  s = cursor.get_cursor_stack();
+  PageNumber pgno_leaf8 = s.top().first;
+
   cursor.move_to_last();
 
   ASSERT_EQ(cursor.current_key(), 20);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "20");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf8, 1}, {pgno_rr, 1}, {pgno_right, 1}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 18);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "18");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf8, 0}, {pgno_rr, 1}, {pgno_right, 1}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 17);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "17");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf7, 1}, {pgno_rr, 0}, {pgno_right, 1}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 15);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "15");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf7, 0}, {pgno_rr, 0}, {pgno_right, 1}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 14);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "14");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf6, 1}, {pgno_rl, 1}, {pgno_right, 0}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 13);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "13");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf6, 0}, {pgno_rl, 1}, {pgno_right, 0}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 12);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "12");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf5, 1}, {pgno_rl, 0}, {pgno_right, 0}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 10);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "10");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf5, 0}, {pgno_rl, 0}, {pgno_right, 0}, {root_pgno, 1}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 9);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "9");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf4, 1}, {pgno_lr, 1}, {pgno_left, 1}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 8);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "8");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf4, 0}, {pgno_lr, 1}, {pgno_left, 1}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 7);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "7");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf3, 1}, {pgno_lr, 0}, {pgno_left, 1}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 5);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "5");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf3, 0}, {pgno_lr, 0}, {pgno_left, 1}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 4);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "4");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf2, 1}, {pgno_ll, 1}, {pgno_left, 0}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 3);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "3");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf2, 0}, {pgno_ll, 1}, {pgno_left, 0}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 2);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "2");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf1, 1}, {pgno_ll, 0}, {pgno_left, 0}, {root_pgno, 0}
+  });
 
   ASSERT_TRUE(cursor.prev());
   ASSERT_EQ(cursor.current_key(), 1);
   assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "1");
+  assert_cursor_stack(cursor.get_cursor_stack(), {
+    {pgno_leaf1, 0}, {pgno_ll, 0}, {pgno_left, 0}, {root_pgno, 0}
+  });
 
   ASSERT_FALSE(cursor.prev());
 }
