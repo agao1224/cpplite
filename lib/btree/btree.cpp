@@ -1,6 +1,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <iostream>
+#include <utility>
 
 #include "btree.h"
 #include "pager/base_page.h"
@@ -162,14 +163,78 @@ bool BTreeCursor::move_to_key(DefaultPagerKey key) {
   return true;
 }
 
-DefaultPagerKey BTreeCursor::current_key() const {
-  if (cursor_.size() == 0)
-    throw new std::runtime_error("[btree:current_key]: cursor is empty");
+bool BTreeCursor::prev() {
+  assert(pager_ != nullptr);
+  assert(cursor_.size() > 0);
 
   BTreeCursorStackElt curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
-  if (page_type != PAGER_LEAF_PAGE)
-    throw new std::runtime_error("[btree:current_key]: Invalid page_type found");
+  assert(page_type == PAGER_LEAF_PAGE);
+
+  LeafPageManager curr_lpm(curr.first, pager_->db_file_ptr_, pager_);
+  assert(curr_lpm.cells_.size() == curr_lpm.num_cells_);
+  assert(0 <= curr.second && curr.second < curr_lpm.cells_.size());
+
+  if (curr.second > 0) {
+    cursor_.pop();
+    BTreeCursorStackElt new_curr = std::make_pair(
+      curr.first,
+      curr.second-1
+    );
+    cursor_.push(new_curr);
+    return true;
+  }
+
+  assert(curr.second == 0);
+  // NOTE(andrew): pop leaf and walk up until we find an ancestor with a nonzero
+  // cell index (meaning there's a left subtree to descend into)
+  cursor_.pop();
+  size_t curr_cell_idx = 0;
+  while (cursor_.size() > 0) {
+    curr = cursor_.top();
+    curr_cell_idx = curr.second;
+    if (curr_cell_idx > 0) break;
+    cursor_.pop();
+  }
+
+  // NOTE(andrew): already at leftmost cell in tree
+  if (cursor_.size() == 0) return false;
+
+  assert(curr.second > 0);
+  cursor_.pop();
+  BTreeCursorStackElt new_ancestor = std::make_pair(
+    curr.first,
+    curr.second-1
+  );
+  cursor_.push(new_ancestor);
+
+  assert(pager_->get_page_type(new_ancestor.first) == PAGER_NODE_PAGE);
+  NodePageManager npm(new_ancestor.first, pager_->db_file_ptr_);
+  PageNumber child_page = npm.cells_[new_ancestor.second].left_child;
+
+  BTreeCursorStackElt new_child;
+  while (true) {
+    if (pager_->get_page_type(child_page) == PAGER_LEAF_PAGE) {
+      LeafPageManager lpm(child_page, pager_->db_file_ptr_, pager_);
+      new_child = std::make_pair(child_page, lpm.num_cells_-1);
+      cursor_.push(new_child);
+      break;
+    }
+
+    npm = NodePageManager(child_page, pager_->db_file_ptr_); 
+    new_child = std::make_pair(child_page, npm.num_cells_);
+    cursor_.push(new_child);
+    child_page = npm.right_child_;
+  }
+  return true;
+}
+
+DefaultPagerKey BTreeCursor::current_key() const {
+  assert(cursor_.size() > 0);
+
+  BTreeCursorStackElt curr = cursor_.top();
+  PagerPageType page_type = pager_->get_page_type(curr.first);
+  assert (page_type == PAGER_LEAF_PAGE);
 
   LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
   if (0 <= curr.second && curr.second < lpm.cells_.size())
@@ -179,25 +244,21 @@ DefaultPagerKey BTreeCursor::current_key() const {
 }
 
 PageNumber BTreeCursor::current_pgno() const {
-  if (cursor_.size() == 0)
-    throw new std::runtime_error("[btree:current_pgno]: cursor is empty");
+  assert(cursor_.size() > 0);
 
   BTreeCursorStackElt curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
-  if (page_type != PAGER_LEAF_PAGE)
-    throw new std::runtime_error("[btree:current_pgno]: Invalid page_type found");
+  assert (page_type == PAGER_LEAF_PAGE);
 
   return curr.first;
 }
 
 PageNumber BTreeCursor::current_record_pgno() const {
-  if (cursor_.size() == 0)
-    throw new std::runtime_error("[btree:current_record_pgno]: cursor is empty");
+  assert(cursor_.size() > 0);
 
   BTreeCursorStackElt curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
-  if (page_type != PAGER_LEAF_PAGE)
-    throw new std::runtime_error("[btree:current_record_pgno]: Invalid page_type found");
+  assert(page_type == PAGER_LEAF_PAGE);
 
   LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
   if (0 <= curr.second && curr.second < lpm.cells_.size())

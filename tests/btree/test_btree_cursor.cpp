@@ -532,3 +532,235 @@ TEST_F(BTreeCursorTest, BTreeMoveToKeyDeep1) {
   ASSERT_FALSE(cursor.move_to_key(11));
   ASSERT_FALSE(cursor.move_to_key(100));
 }
+
+TEST_F(BTreeCursorTest, BTreePrevBasic1) {
+  BTreeConfig config;
+  config.node_min_cells = config.leaf_min_cells = 2;
+  config.node_max_cells = config.leaf_max_cells = 4;
+
+  PageNumber root_pgno = BTreeBuilder::build_tree(
+    "tests/btree/configs/basic1.yaml",
+    pager.get(),
+    config
+  );
+
+  BTreeCursor cursor(pager.get(), root_pgno, config);
+  cursor.move_to_last();
+
+  ASSERT_EQ(cursor.current_key(), 13);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "131313");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 12);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "121212");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 10);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "101010");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 9);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "999");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 5);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "555");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 3);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "333");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 1);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "111");
+
+  ASSERT_FALSE(cursor.prev());
+}
+
+TEST_F(BTreeCursorTest, BTreePrevBasic2) {
+  BTreeConfig config;
+  config.node_min_cells = config.leaf_min_cells = 2;
+  config.node_max_cells = config.leaf_max_cells = 4;
+
+  PageNumber root_pgno = BTreeBuilder::build_tree(
+    "tests/btree/configs/basic2.yaml",
+    pager.get(),
+    config
+  );
+
+  BTreeCursor cursor(pager.get(), root_pgno, config);
+  cursor.move_to_last();
+
+  ASSERT_EQ(cursor.current_key(), 23);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "232323");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 21);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "212121");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 20);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "202020");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 15);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "151515");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 14);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "141414");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 13);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "131313");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 11);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "111111");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 9);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "999");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 7);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "777");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 5);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "555");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 3);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "333");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 1);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "111");
+
+  ASSERT_FALSE(cursor.prev());
+}
+
+TEST_F(BTreeCursorTest, BTreePrevBasic3) {
+  BTreeConfig config;
+  config.node_min_cells = config.leaf_min_cells = 2;
+  config.node_max_cells = config.leaf_max_cells = 4;
+
+  PageNumber root_pgno = BTreeBuilder::build_tree(
+    "tests/btree/configs/basic3.yaml",
+    pager.get(),
+    config
+  );
+
+  BTreeCursor cursor(pager.get(), root_pgno, config);
+  cursor.move_to_last();
+
+  ASSERT_EQ(cursor.current_key(), 14);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "141414");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 12);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "121212");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 9);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "999");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 7);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "777");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 5);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "555");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 3);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "333");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 1);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "111");
+
+  ASSERT_FALSE(cursor.prev());
+}
+
+TEST_F(BTreeCursorTest, BTreePrevDeep1) {
+  BTreeConfig config;
+  config.node_min_cells = config.leaf_min_cells = 1;
+  config.node_max_cells = config.leaf_max_cells = 2;
+
+  PageNumber root_pgno = BTreeBuilder::build_tree(
+    "tests/btree/configs/deep1.yaml",
+    pager.get(),
+    config
+  );
+
+  BTreeCursor cursor(pager.get(), root_pgno, config);
+  cursor.move_to_last();
+
+  ASSERT_EQ(cursor.current_key(), 20);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "20");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 18);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "18");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 17);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "17");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 15);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "15");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 14);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "14");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 13);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "13");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 12);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "12");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 10);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "10");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 9);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "9");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 8);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "8");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 7);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "7");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 5);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "5");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 4);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "4");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 3);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "3");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 2);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "2");
+
+  ASSERT_TRUE(cursor.prev());
+  ASSERT_EQ(cursor.current_key(), 1);
+  assert_payload(cursor.current_record_pgno(), pager->db_file_ptr_, "1");
+
+  ASSERT_FALSE(cursor.prev());
+}
