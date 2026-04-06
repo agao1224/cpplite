@@ -24,8 +24,6 @@ typedef struct NodeCell {
   }
 } NodeCell_t;
 
-// NOTE(andrew): probably rename this to 'BtreePageHeader'
-// Structurally we don't differentiate between node, leaf, or root
 typedef struct PagerNodePageHeader : public PagerBasePageHeader {
   size_t num_cells;
   size_t total_bytes_free;

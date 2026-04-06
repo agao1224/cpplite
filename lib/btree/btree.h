@@ -1,3 +1,4 @@
+#include <map>
 #include <stack>
 #include <utility>
 
@@ -16,12 +17,41 @@ struct BTreeConfig {
   size_t leaf_min_cells = LEAF_MIN_CELLS;
 };
 
+struct SplitNodeRes {
+  PageNumber l;
+  PageNumber r;
+  NodeCell_t l_parent;
+  std::optional<NodeCell_t> r_parent;
+};
+
+struct SplitCellRes {
+  std::vector<DefaultPagerKey> left_keys;
+  std::vector<DefaultPagerKey> right_keys;
+  std::map<
+    DefaultPagerKey,
+    std::variant<NodeCell_t, LeafCell_t>
+  > cell_map;
+};
+
 class BTreeCursor {
   private:
     std::stack<std::pair<PageNumber, size_t>> cursor_;
     Pager* pager_;
     PageNumber root_pgno_;
     BTreeConfig config_;
+
+    SplitCellRes split_cell(
+      PageNumber pgno,
+      std::variant<NodeCell_t, LeafCell_t> cell
+    );
+    NodeCell_t assign_children_nodes(
+      PageNumber left_node,
+      PageNumber right_node,
+      BTreeCursorStackElt parent,
+      DefaultPagerKey separator_key
+    );
+    void split_cursor_leaf(LeafCell_t new_cell);
+    void split_cursor_node(NodeCell_t new_cell);
 
   public:
     BTreeCursor(Pager* pager, PageNumber root_pgno, BTreeConfig config = {});
@@ -42,6 +72,6 @@ class BTreeCursor {
     PageNumber current_record_pgno() const;
     std::vector<std::byte> current_value() const;
 
-    bool insert(DefaultPagerKey key, std::vector<std::byte> value);
+    void insert(DefaultPagerKey key, std::vector<std::byte> value);
     bool remove();
 };

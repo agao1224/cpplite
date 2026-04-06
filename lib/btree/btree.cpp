@@ -10,9 +10,8 @@
 BTreeCursor::BTreeCursor(Pager* pager, PageNumber root_pgno, BTreeConfig config) : config_(config) {
   assert(pager != nullptr);
 
-  pager->seek_page(root_pgno);
-  NodePageManager npm = std::get<NodePageManager>(pager->page_manager_);
-  assert(npm.page_type_ == PAGER_NODE_PAGE);
+  PagerPageType root_type = pager->get_page_type(root_pgno);
+  assert(root_type == PAGER_NODE_PAGE || root_type == PAGER_LEAF_PAGE);
 
   pager_ = pager;
   root_pgno_ = root_pgno;
@@ -91,7 +90,7 @@ void BTreeCursor::move_to_last() {
   return;
 }
 
-size_t find_child_to_traverse(DefaultPagerKey target_key, std::vector<NodeCell_t> cells, PageNumber right_child) {
+size_t find_child_to_traverse(DefaultPagerKey target_key, std::vector<NodeCell_t> cells) {
   size_t lo = 0;
   size_t hi = cells.size();
   while (lo < hi) {
@@ -102,16 +101,16 @@ size_t find_child_to_traverse(DefaultPagerKey target_key, std::vector<NodeCell_t
   return lo;
 }
 
-std::optional<size_t> find_matching_leaf_cell(DefaultPagerKey target_key, std::vector<LeafCell_t> cells) {
+std::pair<bool, size_t> find_matching_leaf_cell(DefaultPagerKey target_key, std::vector<LeafCell_t> cells) {
   size_t lo = 0;
   size_t hi = cells.size();
   while (lo < hi) {
     size_t mid = lo + (hi - lo)/2;
     if (target_key < cells[mid].key) hi = mid;
     else if (cells[mid].key < target_key) lo = mid+1;
-    else return mid;
+    else return {true, mid};
   }
-  return std::nullopt;
+  return {false, lo};
 }
 
 bool BTreeCursor::move_to_key(DefaultPagerKey key) {
@@ -120,18 +119,14 @@ bool BTreeCursor::move_to_key(DefaultPagerKey key) {
   // "absolute" search for the key
   pager_->seek_page(root_pgno_);
   PagerPageType curr_page_type = pager_->get_page_type(root_pgno_);
-  assert(curr_page_type == PAGER_NODE_PAGE);
 
   BTreeCursorStack candidate_cursor;
   PageNumber prev_page = root_pgno_;
 
-  bool key_not_found = true;
-  while (key_not_found) {
+  while (true) {
     if (curr_page_type == PAGER_NODE_PAGE) {
       auto npm = std::get<NodePageManager>(pager_->page_manager_);
-      size_t idx_to_traverse = find_child_to_traverse(
-        key, npm.cells_, npm.right_child_
-      );
+      size_t idx_to_traverse = find_child_to_traverse(key, npm.cells_);
       candidate_cursor.push(
         std::make_pair(prev_page, idx_to_traverse)
       );
@@ -148,18 +143,12 @@ bool BTreeCursor::move_to_key(DefaultPagerKey key) {
       curr_page_type = pager_->get_page_type(child_page);
     } else {
       auto lpm = std::get<LeafPageManager>(pager_->page_manager_);
-      std::optional<size_t> cell_idx_opt = find_matching_leaf_cell(key, lpm.cells_);
-      if (!cell_idx_opt.has_value()) return false;
-
-      size_t cell_idx = cell_idx_opt.value();
-      candidate_cursor.push(
-        std::make_pair(prev_page, cell_idx)
-      );
-      key_not_found = false;
+      auto [found, cell_idx] = find_matching_leaf_cell(key, lpm.cells_);
+      candidate_cursor.push(std::make_pair(prev_page, cell_idx));
+      cursor_ = candidate_cursor;
+      return found;
     }
   }
-  cursor_ = candidate_cursor;
-  return true;
 }
 
 bool BTreeCursor::prev() {
@@ -338,3 +327,38 @@ PageNumber BTreeCursor::current_record_pgno() const {
 
   throw new std::runtime_error("[btree:current_record_pgno]: Cell index out of range");
 }
+
+void BTreeCursor::insert(DefaultPagerKey key, std::vector<std::byte> value) {
+  assert(pager_ != nullptr);
+
+  // check if root is empty first
+  // - if so, special case:
+  // insert new NodeCell_t to root page
+  // set left, right child
+
+  bool key_exists = move_to_key(key);
+  if (key_exists)
+    throw new std::runtime_error("[btree:insert]: Duplicate key");
+
+  assert(cursor_.size() > 0);
+
+  BTreeCursorStackElt curr = cursor_.top();
+  assert(pager_->get_page_type(curr.first) == PAGER_LEAF_PAGE);
+  LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
+
+  assert(lpm.num_cells_ == lpm.cells_.size());
+  if (lpm.num_cells_ < config_.leaf_max_cells) {
+    lpm.insert_cell(key, value);
+    return;
+  }
+
+  assert(lpm.num_cells_ == config_.leaf_max_cells);
+
+  LeafCell_t new_leaf;
+  new_leaf.key = key;
+  new_leaf.payload_size = value.size();
+  new_leaf.record_page = pager_->create_page(PAGER_OVERFLOW_PAGE, value);
+  split_cursor_leaf(new_leaf);
+  return;
+}
+

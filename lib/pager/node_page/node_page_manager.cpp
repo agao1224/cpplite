@@ -57,18 +57,21 @@ bool NodePageManager::insert_node_cell(DefaultPagerKey key) {
   assert(num_cells_ == cells_.size());
   assert(db_file_ptr_ != nullptr);
 
-  // NOTE(andrew): Not enough space to write in node cell,
-  // the caller should handle creating another node page to
-  // with a new cell in it
   if (sizeof(NodeCell_t) > total_bytes_free_)
     return false;
 
   assert(sizeof(NodeCell_t) <= total_bytes_free_);
+
+  size_t lo = 0, hi = cells_.size();
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (key < cells_[mid].key) hi = mid;
+    else if (cells_[mid].key < key) lo = mid + 1;
+    else throw std::runtime_error("[NodePageManager]: Duplicate node cell key");
+  }
+
   NodeCell_t node_cell(key, NULL_PAGE);
-
-  uint16_t free_bytes = total_bytes_free_ - sizeof(NodeCell_t);
-
-  cells_.push_back(node_cell);
+  cells_.insert(cells_.begin() + lo, node_cell);
   std::vector<std::byte> cell_bytes(cells_.size() * sizeof(NodeCell_t));
   std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
 

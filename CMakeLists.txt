@@ -102,6 +102,7 @@ add_executable(
   lib/pager/overflow_page/overflow_page_manager.cpp
   lib/btree/btree.h
   lib/btree/btree.cpp
+  lib/btree/utils.cpp
 )
 
 target_link_libraries(
