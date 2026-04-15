@@ -57,18 +57,21 @@ bool NodePageManager::insert_node_cell(DefaultPagerKey key) {
   assert(num_cells_ == cells_.size());
   assert(db_file_ptr_ != nullptr);
 
-  // NOTE(andrew): Not enough space to write in node cell,
-  // the caller should handle creating another node page to
-  // with a new cell in it
   if (sizeof(NodeCell_t) > total_bytes_free_)
     return false;
 
   assert(sizeof(NodeCell_t) <= total_bytes_free_);
+
+  size_t lo = 0, hi = cells_.size();
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (key < cells_[mid].key) hi = mid;
+    else if (cells_[mid].key < key) lo = mid + 1;
+    else throw std::runtime_error("[NodePageManager]: Duplicate node cell key");
+  }
+
   NodeCell_t node_cell(key, NULL_PAGE);
-
-  uint16_t free_bytes = total_bytes_free_ - sizeof(NodeCell_t);
-
-  cells_.push_back(node_cell);
+  cells_.insert(cells_.begin() + lo, node_cell);
   std::vector<std::byte> cell_bytes(cells_.size() * sizeof(NodeCell_t));
   std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
 
@@ -178,6 +181,75 @@ void NodePageManager::set_node_right_child(PageNumber new_right_child) {
   if (!write_ok) throw std::runtime_error("[NodePageManager:set_node_right_child]: Failed to write");
   db_file.os_close();
   return;
+}
+
+void NodePageManager::delete_node_cell(DefaultPagerKey key) {
+  assert(db_file_ptr_ != nullptr);
+  assert(num_cells_ == cells_.size());
+
+  std::optional<size_t> key_idx_opt = find_node_cell_idx(key);
+  if (!key_idx_opt.has_value())
+    throw std::runtime_error("[NodePageManager:delete_node_cell]: Key not found");
+
+  cells_.erase(cells_.begin() + key_idx_opt.value());
+  num_cells_--;
+  total_bytes_free_ += sizeof(NodeCell_t);
+
+  std::vector<std::byte> cell_bytes(cells_.size() * sizeof(NodeCell_t));
+  std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
+
+  PagerNodePageHeader_t node_page_header(
+    CHECKSUM,
+    PAGER_NODE_PAGE,
+    num_cells_,
+    total_bytes_free_,
+    right_child_
+  );
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+
+  bool seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + sizeof(PagerNodePageHeader_t));
+  if (!seek_ok)
+    throw std::runtime_error("[NodePageManager:delete_node_cell]: Failed to seek to write cells");
+  bool write_ok = db_file.os_write(cell_bytes, cell_bytes.size());
+  if (!write_ok)
+    throw std::runtime_error("[NodePageManager:delete_node_cell]: Failed to write cells");
+
+  seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[NodePageManager:delete_node_cell]: Failed to seek to write header");
+  write_ok = db_file.os_write(node_page_header.to_bytes(), sizeof(PagerNodePageHeader_t));
+  if (!write_ok)
+    throw std::runtime_error("[NodePageManager:delete_node_cell]: Failed to write header");
+
+  db_file.os_close();
+}
+
+void NodePageManager::update_cell_key(DefaultPagerKey old_key, DefaultPagerKey new_key) {
+  assert(db_file_ptr_ != nullptr);
+  assert(num_cells_ == cells_.size());
+
+  std::optional<size_t> key_idx_opt = find_node_cell_idx(old_key);
+  if (!key_idx_opt.has_value())
+    throw std::runtime_error("[NodePageManager:update_cell_key]: Key not found");
+
+  cells_[key_idx_opt.value()].key = new_key;
+
+  std::vector<std::byte> cell_bytes(cells_.size() * sizeof(NodeCell_t));
+  std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+
+  bool seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + sizeof(PagerNodePageHeader_t));
+  if (!seek_ok)
+    throw std::runtime_error("[NodePageManager:update_cell_key]: Failed to seek");
+  bool write_ok = db_file.os_write(cell_bytes, cell_bytes.size());
+  if (!write_ok)
+    throw std::runtime_error("[NodePageManager:update_cell_key]: Failed to write cells");
+
+  db_file.os_close();
 }
 
 size_t NodePageManager::get_free_space() {

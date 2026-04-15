@@ -112,3 +112,77 @@ TEST_F(NodePageManagerTest, NodePageManagerTree) {
   ASSERT_EQ(npm.right_child_, np3);
   ASSERT_EQ(npm.cells_[4].left_child, np4);
 }
+
+TEST_F(NodePageManagerTest, DeleteNodeCellRemovesCell) {
+  PageNumber np1 = pager->create_page(PAGER_NODE_PAGE);
+  NodePageManager npm(np1, db_file_ptr);
+  npm.insert_node_cell(10);
+  npm.insert_node_cell(20);
+  npm.insert_node_cell(30);
+
+  npm.delete_node_cell(20);
+
+  NodePageManager reloaded(np1, db_file_ptr);
+  ASSERT_EQ(reloaded.num_cells_, 2);
+  ASSERT_EQ(reloaded.cells_[0].key, 10);
+  ASSERT_EQ(reloaded.cells_[1].key, 30);
+}
+
+TEST_F(NodePageManagerTest, DeleteNodeCellUpdatesFreeSpace) {
+  PageNumber np1 = pager->create_page(PAGER_NODE_PAGE);
+  NodePageManager npm(np1, db_file_ptr);
+  npm.insert_node_cell(10);
+  npm.insert_node_cell(20);
+  size_t free_before = npm.get_free_space();
+
+  npm.delete_node_cell(10);
+
+  NodePageManager reloaded(np1, db_file_ptr);
+  ASSERT_EQ(reloaded.get_free_space(), free_before + sizeof(NodeCell_t));
+}
+
+TEST_F(NodePageManagerTest, DeleteNodeCellThrowsNotFound) {
+  PageNumber np1 = pager->create_page(PAGER_NODE_PAGE);
+  NodePageManager npm(np1, db_file_ptr);
+  npm.insert_node_cell(10);
+
+  ASSERT_THROW(npm.delete_node_cell(99), std::runtime_error);
+}
+
+TEST_F(NodePageManagerTest, UpdateCellKeyPreservesOnDisk) {
+  PageNumber np1 = pager->create_page(PAGER_NODE_PAGE);
+  NodePageManager npm(np1, db_file_ptr);
+  npm.insert_node_cell(10);
+  npm.insert_node_cell(20);
+  npm.insert_node_cell(30);
+
+  npm.update_cell_key(20, 25);
+
+  NodePageManager reloaded(np1, db_file_ptr);
+  ASSERT_EQ(reloaded.num_cells_, 3);
+  ASSERT_EQ(reloaded.cells_[0].key, 10);
+  ASSERT_EQ(reloaded.cells_[1].key, 25);
+  ASSERT_EQ(reloaded.cells_[2].key, 30);
+}
+
+TEST_F(NodePageManagerTest, UpdateCellKeyPreservesLeftChild) {
+  PageNumber np1 = pager->create_page(PAGER_NODE_PAGE);
+  PageNumber np2 = pager->create_page(PAGER_NODE_PAGE);
+  NodePageManager npm(np1, db_file_ptr);
+  npm.insert_node_cell(10);
+  npm.set_cell_left_child(10, np2);
+
+  npm.update_cell_key(10, 15);
+
+  NodePageManager reloaded(np1, db_file_ptr);
+  ASSERT_EQ(reloaded.cells_[0].key, 15);
+  ASSERT_EQ(reloaded.cells_[0].left_child, np2);
+}
+
+TEST_F(NodePageManagerTest, UpdateCellKeyThrowsNotFound) {
+  PageNumber np1 = pager->create_page(PAGER_NODE_PAGE);
+  NodePageManager npm(np1, db_file_ptr);
+  npm.insert_node_cell(10);
+
+  ASSERT_THROW(npm.update_cell_key(99, 100), std::runtime_error);
+}

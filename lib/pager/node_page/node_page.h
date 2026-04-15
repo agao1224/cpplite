@@ -24,8 +24,6 @@ typedef struct NodeCell {
   }
 } NodeCell_t;
 
-// NOTE(andrew): probably rename this to 'BtreePageHeader'
-// Structurally we don't differentiate between node, leaf, or root
 typedef struct PagerNodePageHeader : public PagerBasePageHeader {
   size_t num_cells;
   size_t total_bytes_free;
@@ -75,6 +73,8 @@ class NodePageManager: public BasePageManager {
     bool insert_node_cell(DefaultPagerKey key);
     void set_cell_left_child(DefaultPagerKey key, PageNumber left_child_pgno);
     void set_node_right_child(PageNumber right_child_pgno);
+    void update_cell_key(DefaultPagerKey old_key, DefaultPagerKey new_key);
+    void delete_node_cell(DefaultPagerKey key);
     size_t get_free_space();
 };
 

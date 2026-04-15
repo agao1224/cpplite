@@ -75,6 +75,8 @@ class LeafPageManager: public BasePageManager {
     PageNumber next_page_;
 
     bool insert_cell(DefaultPagerKey key, std::vector<std::byte> cell_data);
+    bool write_cell(LeafCell_t cell);
+    void delete_cell(DefaultPagerKey key);
     std::optional<std::vector<std::byte>> get_payload(DefaultPagerKey key);
     size_t get_free_space();
 

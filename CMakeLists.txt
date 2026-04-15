@@ -86,6 +86,11 @@ add_executable(
   tests/test_utils.h
   tests/test_utils.cpp
   tests/db_test_fixture.h
+  tests/btree/btree_test_utils.h
+  tests/btree/btree_test_utils.cpp
+  tests/btree/builder/btree_builder.h
+  tests/btree/builder/btree_builder.cpp
+  tests/btree/builder/btree_validator.cpp
   lib/vfs/osfile.h
   lib/vfs/osfile.cpp
   lib/pager/pager.h
@@ -97,6 +102,7 @@ add_executable(
   lib/pager/overflow_page/overflow_page_manager.cpp
   lib/btree/btree.h
   lib/btree/btree.cpp
+  lib/btree/utils.cpp
 )
 
 target_link_libraries(

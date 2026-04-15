@@ -74,14 +74,20 @@ bool LeafPageManager::insert_cell(DefaultPagerKey key, std::vector<std::byte> ce
     return false;
 
   assert(sizeof(LeafCell_t) <= total_bytes_free_);
+  size_t lo = 0, hi = cells_.size();
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (key < cells_[mid].key) hi = mid;
+    else if (cells_[mid].key < key) lo = mid + 1;
+    else throw std::runtime_error("[LeafPageManager]: Duplicate leaf cell key");
+  }
+
   LeafCell_t leaf_cell;
-  uint32_t payload_size = cell_data.size();
-  leaf_cell.payload_size = payload_size;
+  leaf_cell.payload_size = cell_data.size();
   leaf_cell.key = key;
   leaf_cell.record_page = pager_->create_page(PAGER_OVERFLOW_PAGE, cell_data);
 
-  uint16_t free_bytes = total_bytes_free_ - sizeof(LeafCell_t);
-  cells_.push_back(leaf_cell);
+  cells_.insert(cells_.begin() + lo, leaf_cell);
   std::vector<std::byte> cell_bytes(cells_.size() * sizeof(LeafCell_t));
   std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
 
@@ -103,12 +109,12 @@ bool LeafPageManager::insert_cell(DefaultPagerKey key, std::vector<std::byte> ce
     PAGER_LEAF_PAGE,
     num_cells_,
     total_bytes_free_,
-    NULL_PAGE,
-    NULL_PAGE
+    next_page_,
+    prev_page_
   );
 
   size_t expected_bytes = (
-    sizeof(PagerLeafPageHeader_t) 
+    sizeof(PagerLeafPageHeader_t)
     + (num_cells_ * sizeof(LeafCell_t))
     + total_bytes_free_
   );
@@ -123,6 +129,123 @@ bool LeafPageManager::insert_cell(DefaultPagerKey key, std::vector<std::byte> ce
   db_file.os_close();
 
   return true;
+}
+
+bool LeafPageManager::write_cell(LeafCell_t cell) {
+  assert(num_cells_ == cells_.size());
+  assert(db_file_ptr_ != nullptr);
+  assert(pager_ != nullptr);
+
+  if (sizeof(LeafCell_t) > total_bytes_free_)
+    return false;
+
+  size_t lo = 0, hi = cells_.size();
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (cell.key < cells_[mid].key) hi = mid;
+    else if (cells_[mid].key < cell.key) lo = mid + 1;
+    else throw std::runtime_error("[LeafPageManager]: Duplicate leaf cell key");
+  }
+
+  cells_.insert(cells_.begin() + lo, cell);
+  std::vector<std::byte> cell_bytes(cells_.size() * sizeof(LeafCell_t));
+  std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
+
+  total_bytes_free_ -= sizeof(LeafCell_t);
+  num_cells_++;
+
+  PagerLeafPageHeader_t leaf_page_header(
+    CHECKSUM,
+    PAGER_LEAF_PAGE,
+    num_cells_,
+    total_bytes_free_,
+    next_page_,
+    prev_page_
+  );
+
+  size_t expected_bytes = (
+    sizeof(PagerLeafPageHeader_t)
+    + (num_cells_ * sizeof(LeafCell_t))
+    + total_bytes_free_
+  );
+  assert(expected_bytes == PAGE_SIZE);
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+
+  bool seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + sizeof(PagerLeafPageHeader_t));
+  if (!seek_ok)
+    throw std::runtime_error("[LeafPageManager:write_cell]: Failed to seek to write cells");
+  bool write_ok = db_file.os_write(cell_bytes, cell_bytes.size());
+  if (!write_ok)
+    throw std::runtime_error("[LeafPageManager:write_cell]: Failed to write cells");
+
+  seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[LeafPageManager:write_cell]: Failed to seek to write header");
+  write_ok = db_file.os_write(leaf_page_header.to_bytes(), sizeof(PagerLeafPageHeader_t));
+  if (!write_ok)
+    throw std::runtime_error("[LeafPageManager:write_cell]: Failed to write header");
+
+  db_file.os_close();
+  return true;
+}
+
+void LeafPageManager::delete_cell(DefaultPagerKey key) {
+  assert(pager_ != nullptr);
+  assert(db_file_ptr_ != nullptr);
+  assert(num_cells_ == cells_.size());
+
+  if (num_cells_ == 0) return;
+
+  size_t lo = 0, hi = cells_.size();
+  while (lo < hi) {
+    size_t mid = lo + (hi - lo) / 2;
+    if (key < cells_[mid].key) hi = mid;
+    else if (cells_[mid].key < key) lo = mid + 1;
+    else {
+      lo = mid;
+      break;
+    }
+  }
+
+  if (lo >= cells_.size() || cells_[lo].key != key)
+    throw std::runtime_error("[LeafPageManager:delete_cell]: Key not found");
+
+  cells_.erase(cells_.begin() + lo);
+  num_cells_--;
+  total_bytes_free_ += sizeof(LeafCell_t);
+
+  std::vector<std::byte> cell_bytes(cells_.size() * sizeof(LeafCell_t));
+  std::memcpy(cell_bytes.data(), cells_.data(), cell_bytes.size());
+
+  PagerLeafPageHeader_t leaf_page_header(
+    CHECKSUM,
+    PAGER_LEAF_PAGE,
+    num_cells_,
+    total_bytes_free_,
+    next_page_,
+    prev_page_
+  );
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+
+  bool seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE + sizeof(PagerLeafPageHeader_t));
+  if (!seek_ok)
+    throw std::runtime_error("[LeafPageManager:delete_cell]: Failed to seek to write cells");
+  bool write_ok = db_file.os_write(cell_bytes, cell_bytes.size());
+  if (!write_ok)
+    throw std::runtime_error("[LeafPageManager:delete_cell]: Failed to write cells");
+
+  seek_ok = db_file.os_seek((pgno_-1)*PAGE_SIZE);
+  if (!seek_ok)
+    throw std::runtime_error("[LeafPageManager:delete_cell]: Failed to seek to write header");
+  write_ok = db_file.os_write(leaf_page_header.to_bytes(), sizeof(PagerLeafPageHeader_t));
+  if (!write_ok)
+    throw std::runtime_error("[LeafPageManager:delete_cell]: Failed to write header");
+
+  db_file.os_close();
 }
 
 std::optional<std::vector<std::byte>> LeafPageManager::get_payload(DefaultPagerKey key) {

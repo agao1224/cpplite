@@ -136,6 +136,80 @@ TEST_F(LeafPageManagerTest, LeafPageManagerGetPrevNext) {
   ASSERT_EQ(expected_number_of_pages, pages_to_create);
 }
 
+TEST_F(LeafPageManagerTest, WriteCell_PreservesRecordPage) {
+  std::vector<std::byte> payload = generate_random_payload(1000);
+
+  PageNumber src_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager src_lpm(src_leaf, db_file_ptr, pager.get());
+  src_lpm.insert_cell(42, payload);
+  LeafCell_t original_cell = src_lpm.cells_[0];
+
+  PageNumber dst_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager dst_lpm(dst_leaf, db_file_ptr, pager.get());
+  bool ok = dst_lpm.write_cell(original_cell);
+  ASSERT_TRUE(ok);
+
+  ASSERT_EQ(dst_lpm.num_cells_, 1);
+  ASSERT_EQ(dst_lpm.cells_[0].key, 42);
+  ASSERT_EQ(dst_lpm.cells_[0].payload_size, payload.size());
+  ASSERT_EQ(dst_lpm.cells_[0].record_page, original_cell.record_page);
+}
+
+TEST_F(LeafPageManagerTest, WriteCell_PayloadStillReadable) {
+  std::vector<std::byte> payload = generate_random_payload(50000);
+
+  PageNumber src_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager src_lpm(src_leaf, db_file_ptr, pager.get());
+  src_lpm.insert_cell(7, payload);
+  LeafCell_t original_cell = src_lpm.cells_[0];
+
+  PageNumber dst_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager dst_lpm(dst_leaf, db_file_ptr, pager.get());
+  dst_lpm.write_cell(original_cell);
+
+  std::optional<std::vector<std::byte>> result = dst_lpm.get_payload(7);
+  ASSERT_TRUE(result.has_value());
+  ASSERT_EQ(result.value(), payload);
+}
+
+TEST_F(LeafPageManagerTest, WriteCell_Multiple) {
+  size_t num_cells = 5;
+  std::vector<LeafCell_t> cells;
+
+  PageNumber src_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager src_lpm(src_leaf, db_file_ptr, pager.get());
+  for (size_t i = 0; i < num_cells; i++) {
+    src_lpm.insert_cell(i, generate_random_payload(500));
+    cells.push_back(src_lpm.cells_[i]);
+  }
+
+  PageNumber dst_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager dst_lpm(dst_leaf, db_file_ptr, pager.get());
+  for (auto& c : cells)
+    ASSERT_TRUE(dst_lpm.write_cell(c));
+
+  LeafPageManager dst_lpm_reloaded(dst_leaf, db_file_ptr, pager.get());
+  ASSERT_EQ(dst_lpm_reloaded.num_cells_, num_cells);
+  for (size_t i = 0; i < num_cells; i++) {
+    ASSERT_EQ(dst_lpm_reloaded.cells_[i].key, cells[i].key);
+    ASSERT_EQ(dst_lpm_reloaded.cells_[i].record_page, cells[i].record_page);
+    ASSERT_EQ(dst_lpm_reloaded.cells_[i].payload_size, cells[i].payload_size);
+  }
+}
+
+TEST_F(LeafPageManagerTest, WriteCell_FreeSpaceDecreases) {
+  PageNumber leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager src_lpm(leaf, db_file_ptr, pager.get());
+  src_lpm.insert_cell(1, generate_random_payload(100));
+  LeafCell_t cell = src_lpm.cells_[0];
+
+  PageNumber dst_leaf = pager->create_page(PAGER_LEAF_PAGE);
+  LeafPageManager dst_lpm(dst_leaf, db_file_ptr, pager.get());
+  size_t free_before = dst_lpm.get_free_space();
+  dst_lpm.write_cell(cell);
+  ASSERT_EQ(dst_lpm.get_free_space(), free_before - sizeof(LeafCell_t));
+}
+
 TEST_F(LeafPageManagerTest, LeafPageManagerSetPrevNext) {
   PageNumber leaf_pgno = pager->create_page(PAGER_LEAF_PAGE);
   LeafPageManager lpm(leaf_pgno, db_file_ptr, pager.get());
