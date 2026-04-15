@@ -379,6 +379,11 @@ void BTreeCursor::remove() {
 
   lpm.delete_cell(key_to_delete);
 
+  if (lpm.num_cells_ >= config_.leaf_min_cells) {
+    assert(!move_to_key(key_to_delete));
+    return;
+  }
+
   if (curr.first == root_pgno_) {
     assert(cursor_.size() == 0);
     assert(pager_->get_page_type(root_pgno_) == PAGER_LEAF_PAGE);
@@ -388,6 +393,7 @@ void BTreeCursor::remove() {
     BTreeCursorNode parent = cursor_.top();
     cursor_.pop();
 
+    assert(lpm.num_cells_ < config_.leaf_min_cells);
     if (!borrow_from_leaf_sibling(parent, curr.first))
       merge_with_leaf_sibling(parent, curr.first);
   }

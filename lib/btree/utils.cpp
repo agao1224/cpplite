@@ -274,7 +274,7 @@ void BTreeCursor::split_cursor_node(NodeCell_t new_cell) {
 bool BTreeCursor::borrow_leaf_sibling_cell(
   PageNumber curr_pgno,
   PageNumber sibling_pgno,
-  BTreeCursorNode sibling_parent,
+  BTreeCursorNode sep,
   bool is_left_sibling
 ) {
   if (sibling_pgno == NULL_PAGE) return false;
@@ -285,13 +285,13 @@ bool BTreeCursor::borrow_leaf_sibling_cell(
   if (sibling_lpm.num_cells_ <= config_.leaf_min_cells) return false;
 
   LeafPageManager lpm(curr_pgno, pager_->db_file_ptr_, pager_);
-  assert(pager_->get_page_type(sibling_parent.first) == PAGER_NODE_PAGE);
+  assert(pager_->get_page_type(sep.first) == PAGER_NODE_PAGE);
 
-  NodePageManager sibling_parent_npm(sibling_parent.first, pager_->db_file_ptr_);
-  assert(sibling_parent_npm.num_cells_ == sibling_parent_npm.cells_.size());
-  assert(sibling_parent.second < sibling_parent_npm.num_cells_);
+  NodePageManager sep_npm(sep.first, pager_->db_file_ptr_);
+  assert(sep_npm.num_cells_ == sep_npm.cells_.size());
+  assert(sep.second < sep_npm.num_cells_);
 
-  DefaultPagerKey old_sibling_parent_key = sibling_parent_npm.cells_[sibling_parent.second].key;
+  DefaultPagerKey old_sep_key = sep_npm.cells_[sep.second].key;
   assert(lpm.prev_page() == sibling_pgno || lpm.next_page() == sibling_pgno);
 
   if (is_left_sibling) {
@@ -301,7 +301,7 @@ bool BTreeCursor::borrow_leaf_sibling_cell(
     assert(sibling_lpm.num_cells_ >= config_.leaf_min_cells);
 
     lpm.write_cell(borrowed_cell);
-    sibling_parent_npm.update_cell_key(old_sibling_parent_key, borrowed_cell.key);
+    sep_npm.update_cell_key(old_sep_key, borrowed_cell.key);
   } else {
     LeafCell_t borrowed_cell = sibling_lpm.cells_[0];
 
@@ -309,10 +309,10 @@ bool BTreeCursor::borrow_leaf_sibling_cell(
     assert(sibling_lpm.num_cells_ >= config_.leaf_min_cells);
 
     lpm.write_cell(borrowed_cell);
-    DefaultPagerKey new_sibling_parent_key = sibling_lpm.cells_[0].key;
-    assert(borrowed_cell.key < new_sibling_parent_key);
+    DefaultPagerKey new_sep_key = sibling_lpm.cells_[0].key;
+    assert(borrowed_cell.key < new_sep_key);
 
-    sibling_parent_npm.update_cell_key(old_sibling_parent_key, new_sibling_parent_key);
+    sep_npm.update_cell_key(old_sep_key, new_sep_key);
   }
   return true;
 }
@@ -323,8 +323,8 @@ bool BTreeCursor::borrow_from_leaf_sibling(
 ) {
   PageNumber prev_sibling = NULL_PAGE;
   PageNumber next_sibling = NULL_PAGE;
-  BTreeCursorNode prev_sibling_parent;
-  BTreeCursorNode next_sibling_parent;
+  BTreeCursorNode left_sep;
+  BTreeCursorNode right_sep;
   assert(pager_->get_page_type(parent.first) == PAGER_NODE_PAGE);
 
   NodePageManager parent_npm(parent.first, pager_->db_file_ptr_);
@@ -333,26 +333,26 @@ bool BTreeCursor::borrow_from_leaf_sibling(
 
   if (parent.second > 0) {
     prev_sibling = parent_npm.cells_[parent.second-1].left_child;
-    prev_sibling_parent = std::make_pair(parent.first, parent.second-1);
+    left_sep = std::make_pair(parent.first, parent.second-1);
   }
 
   if (parent.second+1 < parent_npm.num_cells_) {
     next_sibling = parent_npm.cells_[parent.second+1].left_child;
-    next_sibling_parent = std::make_pair(parent.first, parent.second+1);
+    right_sep = std::make_pair(parent.first, parent.second);
   } else if (parent.second+1 == parent_npm.num_cells_) {
     next_sibling = parent_npm.right_child_;
-    next_sibling_parent = std::make_pair(parent.first, parent.second+1);
+    right_sep = std::make_pair(parent.first, parent.second);
   }
 
-  if (borrow_leaf_sibling_cell(curr_pgno, prev_sibling, prev_sibling_parent, true))
+  if (borrow_leaf_sibling_cell(curr_pgno, prev_sibling, left_sep, true))
     return true;
-  return borrow_leaf_sibling_cell(curr_pgno, next_sibling, next_sibling_parent, false);
+  return borrow_leaf_sibling_cell(curr_pgno, next_sibling, right_sep, false);
 }
 
 bool BTreeCursor::borrow_node_sibling_cell(
   PageNumber curr_pgno,
   PageNumber sibling_pgno,
-  BTreeCursorNode sibling_parent,
+  BTreeCursorNode sep,
   bool is_left_sibling
 ) {
   if (sibling_pgno == NULL_PAGE) return false;
@@ -363,29 +363,29 @@ bool BTreeCursor::borrow_node_sibling_cell(
   assert(sibling_npm.num_cells_ >= config_.node_min_cells);
   if (sibling_npm.num_cells_ == config_.node_min_cells) return false;
 
-  assert(pager_->get_page_type(sibling_parent.first) == PAGER_NODE_PAGE);
-  NodePageManager parent_npm(sibling_parent.first, pager_->db_file_ptr_);
+  assert(pager_->get_page_type(sep.first) == PAGER_NODE_PAGE);
+  NodePageManager parent_npm(sep.first, pager_->db_file_ptr_);
   assert(parent_npm.num_cells_ == parent_npm.cells_.size());
-  assert(sibling_parent.second <= parent_npm.num_cells_);
+  assert(sep.second <= parent_npm.num_cells_);
   if (is_left_sibling) {
-    DefaultPagerKey sibling_parent_key = parent_npm.cells_[sibling_parent.second].key;
+    DefaultPagerKey sep_key = parent_npm.cells_[sep.second].key;
     PageNumber sibling_right_child = sibling_npm.right_child_;
 
     NodeCell_t last_sibling_cell = sibling_npm.cells_[sibling_npm.num_cells_-1];
     sibling_npm.set_node_right_child(sibling_npm.cells_[sibling_npm.num_cells_-1].left_child);
     sibling_npm.delete_node_cell(last_sibling_cell.key);
 
-    parent_npm.update_cell_key(sibling_parent_key, last_sibling_cell.key);
+    parent_npm.update_cell_key(sep_key, last_sibling_cell.key);
 
-    curr_npm.insert_node_cell(sibling_parent_key);
-    curr_npm.set_cell_left_child(sibling_parent_key, sibling_right_child);
+    curr_npm.insert_node_cell(sep_key);
+    curr_npm.set_cell_left_child(sep_key, sibling_right_child);
   } else {
     PageNumber sibling_left_child = sibling_npm.cells_[0].left_child;
 
     NodeCell_t first_sibling_cell = sibling_npm.cells_[0];
     sibling_npm.delete_node_cell(first_sibling_cell.key);
 
-    NodeCell_t curr_parent = parent_npm.cells_[sibling_parent.second-1];
+    NodeCell_t curr_parent = parent_npm.cells_[sep.second-1];
     DefaultPagerKey curr_parent_key = curr_parent.key;
     assert(curr_parent.left_child == curr_pgno);
     parent_npm.update_cell_key(curr_parent_key, first_sibling_cell.key);
@@ -405,27 +405,27 @@ bool BTreeCursor::borrow_from_node_sibling(BTreeCursorNode parent, PageNumber cu
 
   PageNumber left_sibling = NULL_PAGE;
   PageNumber right_sibling = NULL_PAGE;
-  BTreeCursorNode left_sibling_parent, right_sibling_parent;
+  BTreeCursorNode left_sep, right_sep;
 
   if (parent.second > 0) {
     left_sibling = parent_npm.cells_[parent.second-1].left_child;
-    left_sibling_parent = std::make_pair(parent.first, parent.second-1);
+    left_sep = std::make_pair(parent.first, parent.second-1);
     assert(pager_->get_page_type(left_sibling) == PAGER_NODE_PAGE);
   }
 
   if (parent.second+1 < parent_npm.num_cells_) {
     right_sibling = parent_npm.cells_[parent.second+1].left_child;
-    right_sibling_parent = std::make_pair(parent.first, parent.second+1);
+    right_sep = std::make_pair(parent.first, parent.second+1);
     assert(pager_->get_page_type(right_sibling) == PAGER_NODE_PAGE);
   } else if (parent.second+1 == parent_npm.num_cells_) {
     right_sibling = parent_npm.right_child_;
-    right_sibling_parent = std::make_pair(parent.first, parent.second+1);
+    right_sep = std::make_pair(parent.first, parent.second+1);
     assert(pager_->get_page_type(right_sibling) == PAGER_NODE_PAGE);
   }
 
-  if (borrow_node_sibling_cell(curr_pgno, left_sibling, left_sibling_parent, true))
+  if (borrow_node_sibling_cell(curr_pgno, left_sibling, left_sep, true))
     return true;
-  return borrow_node_sibling_cell(curr_pgno, right_sibling, right_sibling_parent, false);
+  return borrow_node_sibling_cell(curr_pgno, right_sibling, right_sep, false);
 }
 
 PageNumber BTreeCursor::merge_with_node_sibling(
@@ -564,8 +564,12 @@ void BTreeCursor::merge_with_leaf_sibling(BTreeCursorNode parent, PageNumber cur
   }
 
   pager_->insert_freelist(left_pgno);
-  if (parent_npm.num_cells_ < config_.node_min_cells)
+  if (parent.first == root_pgno_ && parent_npm.num_cells_ == 0) {
+    pager_->insert_freelist(root_pgno_);
+    set_root_pgno(right_pgno);
+  } else if (parent.first != root_pgno_ && parent_npm.num_cells_ < config_.node_min_cells) {
     balance_node(parent.first);
+  }
 }
 
 void BTreeCursor::set_root_pgno(PageNumber new_root_pgno) {

@@ -35,7 +35,7 @@ struct SplitCellRes {
 
 class BTreeCursor {
   private:
-    std::stack<std::pair<PageNumber, size_t>> cursor_;
+    BTreeCursorStack cursor_;
     Pager* pager_;
     PageNumber root_pgno_;
     BTreeConfig config_;
@@ -57,7 +57,7 @@ class BTreeCursor {
     bool borrow_leaf_sibling_cell(
       PageNumber curr_pgno,
       PageNumber sibling_pgno,
-      BTreeCursorNode sibling_parent,
+      BTreeCursorNode sep,
       bool is_left_sibling
     );
     bool borrow_from_node_sibling(BTreeCursorNode parent, PageNumber curr_pgno);
