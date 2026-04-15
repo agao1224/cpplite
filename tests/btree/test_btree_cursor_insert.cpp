@@ -2,7 +2,6 @@
 #include <string>
 
 #include <gtest/gtest.h>
-#include "btree/btree_test_utils.h"
 #include "db_test_fixture.h"
 #include "btree/btree.h"
 #include "btree/builder/btree_builder.h"
@@ -28,6 +27,7 @@ TEST_F(BTreeCursorInsertTest, BTreeInsertBasic1) {
 
   std::vector<std::byte> payload1 = generate_random_payload(1024);
   cursor.insert(6, payload1);
+  ASSERT_EQ(cursor.current_key(), 6);
 
   NodePageManager npm(root_pgno, db_file_ptr);
   ASSERT_EQ(npm.num_cells_, 3);
@@ -69,6 +69,7 @@ TEST_F(BTreeCursorInsertTest, BTreeInsertBasic1) {
 
   std::vector<std::byte> payload2 = generate_random_payload(1024);
   cursor.insert(8, payload2);
+  ASSERT_EQ(cursor.current_key(), 8);
 
   lpm2 = LeafPageManager(npm.cells_[1].left_child, db_file_ptr, pager.get());
   ASSERT_EQ(lpm2.num_cells_, 3);
@@ -95,6 +96,7 @@ TEST_F(BTreeCursorInsertTest, BtreeInsertBasic2) {
 
   std::vector<std::byte> payload1 = generate_random_payload(1024);
   cursor.insert(17, payload1);
+  ASSERT_EQ(cursor.current_key(), 17);
 
   NodePageManager npm(root_pgno, db_file_ptr);
   ASSERT_EQ(npm.num_cells_, 4);
@@ -149,6 +151,7 @@ TEST_F(BTreeCursorInsertTest, BtreeInsertBasic2) {
   PageNumber old_root_pgno = cursor.get_root_pgno();
   std::vector<std::byte> payload2 = generate_random_payload(1024);
   cursor.insert(16, payload2);
+  ASSERT_EQ(cursor.current_key(), 16);
   PageNumber new_root_pgno = cursor.get_root_pgno();
 
   ASSERT_NE(new_root_pgno, old_root_pgno);
@@ -229,8 +232,10 @@ TEST_F(BTreeCursorInsertTest, BTreeInsertEmpty1) {
   PageNumber root_pgno = pager->create_page(PAGER_LEAF_PAGE);
   BTreeCursor cursor(pager.get(), root_pgno, config);
 
-  for (int i = 1; i <= 25; i++)
+  for (int i = 1; i <= 25; i++) {
     cursor.insert(i, generate_random_payload(512));
+    ASSERT_EQ(cursor.current_key(), i);
+  }
 
   PageNumber new_root_pgno = cursor.get_root_pgno();
 
@@ -335,8 +340,10 @@ TEST_F(BTreeCursorInsertTest, BTreeInsertEmpty2) {
   PageNumber root_pgno = pager->create_page(PAGER_LEAF_PAGE);
   BTreeCursor cursor(pager.get(), root_pgno, config);
 
-  for (int i = 1; i <= 100; i++)
+  for (int i = 1; i <= 100; i++) {
     cursor.insert(i, generate_random_payload(512));
+    ASSERT_EQ(cursor.current_key(), i);
+  }
 
   NodePageManager root_npm(cursor.get_root_pgno(), db_file_ptr);
   ASSERT_EQ(root_npm.num_cells_, 5);
@@ -398,8 +405,10 @@ TEST_F(BTreeCursorInsertTest, BTreeInsertReverseSorted) {
   PageNumber root_pgno = pager->create_page(PAGER_LEAF_PAGE);
   BTreeCursor cursor(pager.get(), root_pgno, config);
 
-  for (int i = 10; i >= 1; i--)
+  for (int i = 10; i >= 1; i--) {
     cursor.insert(i, generate_random_payload(512));
+    ASSERT_EQ(cursor.current_key(), i);
+  }
 
   auto assert_sorted = [](std::vector<DefaultPagerKey> keys) {
     for (size_t i = 1; i < keys.size(); i++)

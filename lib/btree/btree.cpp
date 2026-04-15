@@ -155,7 +155,7 @@ bool BTreeCursor::prev() {
   assert(pager_ != nullptr);
   assert(cursor_.size() > 0);
 
-  BTreeCursorStackElt curr = cursor_.top();
+  BTreeCursorNode curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
   assert(page_type == PAGER_LEAF_PAGE);
 
@@ -165,7 +165,7 @@ bool BTreeCursor::prev() {
 
   if (curr.second > 0) {
     cursor_.pop();
-    BTreeCursorStackElt new_curr = std::make_pair(
+    BTreeCursorNode new_curr = std::make_pair(
       curr.first,
       curr.second-1
     );
@@ -190,7 +190,7 @@ bool BTreeCursor::prev() {
 
   assert(curr.second > 0);
   cursor_.pop();
-  BTreeCursorStackElt new_ancestor = std::make_pair(
+  BTreeCursorNode new_ancestor = std::make_pair(
     curr.first,
     curr.second-1
   );
@@ -200,7 +200,7 @@ bool BTreeCursor::prev() {
   NodePageManager npm(new_ancestor.first, pager_->db_file_ptr_);
   PageNumber child_page = npm.cells_[new_ancestor.second].left_child;
 
-  BTreeCursorStackElt new_child;
+  BTreeCursorNode new_child;
   while (true) {
     if (pager_->get_page_type(child_page) == PAGER_LEAF_PAGE) {
       LeafPageManager lpm(child_page, pager_->db_file_ptr_, pager_);
@@ -221,7 +221,7 @@ bool BTreeCursor::next() {
   assert(pager_ != nullptr);
   assert(cursor_.size() > 0);
 
-  BTreeCursorStackElt curr = cursor_.top();
+  BTreeCursorNode curr = cursor_.top();
   assert(pager_->get_page_type(curr.first) == PAGER_LEAF_PAGE);
 
   LeafPageManager curr_lpm(curr.first, pager_->db_file_ptr_, pager_);
@@ -230,7 +230,7 @@ bool BTreeCursor::next() {
 
   if (curr.second < curr_lpm.num_cells_ - 1) {
     cursor_.pop();
-    BTreeCursorStackElt new_curr = std::make_pair(
+    BTreeCursorNode new_curr = std::make_pair(
       curr.first,
       curr.second+1
     );
@@ -239,7 +239,6 @@ bool BTreeCursor::next() {
   }
 
   cursor_.pop();
-
 
   assert(curr.second == curr_lpm.num_cells_-1);
   size_t curr_cell_idx = curr.second;
@@ -258,7 +257,7 @@ bool BTreeCursor::next() {
   assert(curr.second < npm.num_cells_);
 
   cursor_.pop();
-  BTreeCursorStackElt new_ancestor = std::make_pair(
+  BTreeCursorNode new_ancestor = std::make_pair(
     curr.first,
     curr.second+1
   );
@@ -273,7 +272,7 @@ bool BTreeCursor::next() {
   else
     child_page = npm.cells_[new_ancestor.second].left_child;
 
-  BTreeCursorStackElt new_child;
+  BTreeCursorNode new_child;
   while (true) {
     if (pager_->get_page_type(child_page) == PAGER_LEAF_PAGE) {
       LeafPageManager lpm(child_page, pager_->db_file_ptr_, pager_);
@@ -290,10 +289,18 @@ bool BTreeCursor::next() {
   return true;
 }
 
+bool BTreeCursor::is_empty() {
+  assert(pager_ != nullptr);
+  PagerPageType root_type = pager_->get_page_type(root_pgno_);
+  if (root_type != PAGER_LEAF_PAGE) return false;
+  LeafPageManager lpm(root_pgno_, pager_->db_file_ptr_, pager_);
+  return lpm.num_cells_ == 0;
+}
+
 DefaultPagerKey BTreeCursor::current_key() const {
   assert(cursor_.size() > 0);
 
-  BTreeCursorStackElt curr = cursor_.top();
+  BTreeCursorNode curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
   assert (page_type == PAGER_LEAF_PAGE);
 
@@ -307,7 +314,7 @@ DefaultPagerKey BTreeCursor::current_key() const {
 PageNumber BTreeCursor::current_pgno() const {
   assert(cursor_.size() > 0);
 
-  BTreeCursorStackElt curr = cursor_.top();
+  BTreeCursorNode curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
   assert (page_type == PAGER_LEAF_PAGE);
 
@@ -317,7 +324,7 @@ PageNumber BTreeCursor::current_pgno() const {
 PageNumber BTreeCursor::current_record_pgno() const {
   assert(cursor_.size() > 0);
 
-  BTreeCursorStackElt curr = cursor_.top();
+  BTreeCursorNode curr = cursor_.top();
   PagerPageType page_type = pager_->get_page_type(curr.first);
   assert(page_type == PAGER_LEAF_PAGE);
 
@@ -331,18 +338,13 @@ PageNumber BTreeCursor::current_record_pgno() const {
 void BTreeCursor::insert(DefaultPagerKey key, std::vector<std::byte> value) {
   assert(pager_ != nullptr);
 
-  // check if root is empty first
-  // - if so, special case:
-  // insert new NodeCell_t to root page
-  // set left, right child
-
   bool key_exists = move_to_key(key);
   if (key_exists)
     throw new std::runtime_error("[btree:insert]: Duplicate key");
 
   assert(cursor_.size() > 0);
 
-  BTreeCursorStackElt curr = cursor_.top();
+  BTreeCursorNode curr = cursor_.top();
   assert(pager_->get_page_type(curr.first) == PAGER_LEAF_PAGE);
   LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
 
@@ -359,6 +361,38 @@ void BTreeCursor::insert(DefaultPagerKey key, std::vector<std::byte> value) {
   new_leaf.payload_size = value.size();
   new_leaf.record_page = pager_->create_page(PAGER_OVERFLOW_PAGE, value);
   split_cursor_leaf(new_leaf);
+  assert(move_to_key(key));
   return;
 }
 
+void BTreeCursor::remove() {
+  assert(cursor_.size() > 0);
+
+  BTreeCursorNode curr = cursor_.top();
+  cursor_.pop();
+  assert(pager_->get_page_type(curr.first) == PAGER_LEAF_PAGE);
+
+  LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
+  assert(lpm.num_cells_ == lpm.cells_.size());
+  assert(curr.second < lpm.num_cells_);
+  DefaultPagerKey key_to_delete = lpm.cells_[curr.second].key;
+
+  lpm.delete_cell(key_to_delete);
+
+  if (curr.first == root_pgno_) {
+    assert(cursor_.size() == 0);
+    assert(pager_->get_page_type(root_pgno_) == PAGER_LEAF_PAGE);
+    if (lpm.num_cells_ == 0) return;
+  } else {
+    assert(cursor_.size() > 0);
+    BTreeCursorNode parent = cursor_.top();
+    cursor_.pop();
+
+    if (!borrow_from_leaf_sibling(parent, curr.first))
+      merge_with_leaf_sibling(parent, curr.first);
+  }
+
+  // NOTE(andrew): key_to_delete no longer exists, so move_to_key lands on
+  // the next key
+  assert(!move_to_key(key_to_delete));
+}

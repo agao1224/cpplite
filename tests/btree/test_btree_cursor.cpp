@@ -60,7 +60,7 @@ TEST_F(BTreeCursorTest, BTreeMoveToFirstSimple) {
   ASSERT_FALSE(stack.empty());
   ASSERT_EQ(stack.size(), 3);
 
-  BTreeCursorStackElt pgno_cell_idx_pair = stack.top();
+  BTreeCursorNode pgno_cell_idx_pair = stack.top();
   ASSERT_EQ(pgno_cell_idx_pair.first, left_leaf_page);
   ASSERT_EQ(pgno_cell_idx_pair.second, 0);
 
@@ -130,7 +130,7 @@ TEST_F(BTreeCursorTest, BTreeMoveToLastSimple) {
   ASSERT_FALSE(stack.empty());
   ASSERT_EQ(stack.size(), 3);
 
-  BTreeCursorStackElt pgno_cell_idx_pair = stack.top();
+  BTreeCursorNode pgno_cell_idx_pair = stack.top();
   ASSERT_EQ(pgno_cell_idx_pair.first, right_leaf_page);
   ASSERT_EQ(pgno_cell_idx_pair.second, 3);
 
@@ -166,7 +166,7 @@ TEST_F(BTreeCursorTest, BTreeMoveToFirstAndLastDeep1) {
   cursor.move_to_first();
 
   BTreeCursorStack stack = cursor.get_cursor_stack();
-  BTreeCursorStackElt curr = stack.top();
+  BTreeCursorNode curr = stack.top();
 
   ASSERT_EQ(pager->get_page_type(curr.first), PAGER_LEAF_PAGE);
 
@@ -214,7 +214,7 @@ TEST_F(BTreeCursorTest, BTreeMoveToFirstAndLastBasic1) {
   cursor.move_to_first();
 
   BTreeCursorStack stack = cursor.get_cursor_stack();
-  BTreeCursorStackElt curr = stack.top();
+  BTreeCursorNode curr = stack.top();
 
   ASSERT_EQ(pager->get_page_type(curr.first), PAGER_LEAF_PAGE);
 
