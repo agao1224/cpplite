@@ -332,6 +332,12 @@ void Pager::set_num_pages(PageNumber new_num_pages) {
   fpm.set_num_pages(new_num_pages);
 }
 
+PageNumber Pager::get_num_pages() {
+  assert(db_file_ptr_ != nullptr);
+  FirstPageManager fpm(db_file_ptr_);
+  return fpm.num_pages_;
+}
+
 PagerPageType Pager::get_page_type(PageNumber pgno) {
   assert(db_file_ptr_ != nullptr);
   assert(pgno != NULL_PAGE);

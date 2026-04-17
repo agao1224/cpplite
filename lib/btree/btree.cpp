@@ -335,6 +335,24 @@ PageNumber BTreeCursor::current_record_pgno() const {
   throw new std::runtime_error("[btree:current_record_pgno]: Cell index out of range");
 }
 
+std::vector<std::byte> BTreeCursor::current_value() const {
+  assert(cursor_.size() > 0);
+
+  BTreeCursorNode curr = cursor_.top();
+  PagerPageType page_type = pager_->get_page_type(curr.first);
+  assert(page_type == PAGER_LEAF_PAGE);
+
+  LeafPageManager lpm(curr.first, pager_->db_file_ptr_, pager_);
+  assert(curr.second < lpm.cells_.size());
+
+  DefaultPagerKey key = lpm.cells_[curr.second].key;
+  std::optional<std::vector<std::byte>> payload = lpm.get_payload(key);
+  if (!payload.has_value())
+    throw new std::runtime_error("[btree:current_value]: No payload associated with key");
+
+  return payload.value();
+}
+
 void BTreeCursor::insert(DefaultPagerKey key, std::vector<std::byte> value) {
   assert(pager_ != nullptr);
 
