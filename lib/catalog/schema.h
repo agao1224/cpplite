@@ -17,7 +17,6 @@ struct Column {
 };
 
 struct Table {
-  DefaultPagerKey oid;
   SchemaType type;
   std::string name;
   std::string tbl_name;

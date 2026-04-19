@@ -57,8 +57,6 @@ uint64_t read_uint64(const std::vector<std::byte> &buffer, size_t &offset) {
 std::vector<std::byte> CatalogManager::serialize_table(Table table) {
   std::vector<std::byte> serialized;
 
-  std::vector<std::byte> oid_bytes = table.oid.to_bytes();
-  serialized.insert(serialized.end(), oid_bytes.begin(), oid_bytes.end());
   serialized.push_back(static_cast<std::byte>(table.type));
 
   uint16_t name_len = table.name.size();
@@ -93,9 +91,6 @@ Table CatalogManager::deserialize_table(std::vector<std::byte> &payload) {
   Table table;
   size_t offset = 0;
 
-  DefaultPagerKey oid =
-      static_cast<DefaultPagerKey>(read_uint32(payload, offset));
-  table.oid = oid;
   table.type = static_cast<SchemaType>(payload[offset]);
   offset++;
 

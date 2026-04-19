@@ -1,4 +1,5 @@
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@ const PageNumber CPPLITE_SCHEMA_PGNO = 2;
 class CatalogManager {
 private:
   std::map<std::string, Table> tables_;
+  std::map<std::string, DefaultPagerKey> table_oids_;
   std::map<std::string, std::vector<std::string>> table_dependencies_;
   BTreeCursor schema_cursor_;
   DefaultPagerKey next_oid_;
@@ -30,4 +32,5 @@ public:
 
   void create_table(Table table);
   void drop_table(std::string tbl_name);
+  std::optional<Table> get_table(std::string name);
 };

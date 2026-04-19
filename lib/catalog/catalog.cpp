@@ -1,12 +1,13 @@
 #include <cassert>
 #include <cstddef>
+#include <optional>
 
 #include "btree/btree.h"
 #include "catalog/catalog.h"
 
 static PageNumber ensure_schema_page(Pager *pager) {
   if (pager->get_num_pages() < CPPLITE_SCHEMA_PGNO) {
-    pager->create_page(PAGER_NODE_PAGE);
+    pager->create_page(PAGER_LEAF_PAGE);
   }
   return CPPLITE_SCHEMA_PGNO;
 }
@@ -17,11 +18,13 @@ void CatalogManager::initialize_tables() {
 
   schema_cursor_.move_to_first();
   do {
+    DefaultPagerKey oid = schema_cursor_.current_key();
     std::vector<std::byte> table_bytes = schema_cursor_.current_value();
     Table table = deserialize_table(table_bytes);
     tables_[table.name] = table;
+    table_oids_[table.name] = oid;
     table_dependencies_[table.tbl_name].push_back(table.name);
-  } while (!schema_cursor_.next());
+  } while (schema_cursor_.next());
 }
 
 CatalogManager::CatalogManager(Pager *pager)
@@ -32,9 +35,12 @@ CatalogManager::CatalogManager(Pager *pager)
   initialize_tables();
 }
 
+CatalogManager::~CatalogManager() {}
+
 void CatalogManager::create_table(Table table) {
   std::vector<std::byte> payload = serialize_table(table);
   schema_cursor_.insert(next_oid_, payload);
+  table_oids_[table.name] = next_oid_;
   next_oid_++;
   fpm_.set_next_oid(next_oid_);
   tables_[table.name] = table;
@@ -46,7 +52,9 @@ void CatalogManager::drop_table(std::string name) {
     return;
 
   Table table = tables_[name];
-  schema_cursor_.move_to_key(table.oid);
+  tables_.erase(name);
+  schema_cursor_.move_to_key(table_oids_[name]);
+  table_oids_.erase(name);
   schema_cursor_.remove();
   if (table_dependencies_.find(table.name) == table_dependencies_.end())
     return;
@@ -55,4 +63,11 @@ void CatalogManager::drop_table(std::string name) {
   for (auto dependent_table : dependencies)
     drop_table(dependent_table);
   return;
+}
+
+std::optional<Table> CatalogManager::get_table(std::string name) {
+  auto it = tables_.find(name);
+  if (it == tables_.end())
+    return std::nullopt;
+  return it->second;
 }

@@ -30,7 +30,6 @@ void BTreeCursor::move_to_first() {
 
   BTreeCursorStack new_cursor;
 
-  assert(curr_page_type == PAGER_NODE_PAGE);
   while (curr_page_type != PAGER_LEAF_PAGE) {
     pager_->seek_page(curr_pgno);
     auto npm = std::get<NodePageManager>(pager_->page_manager_);
