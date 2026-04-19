@@ -84,6 +84,18 @@ add_library(catalog STATIC
 target_include_directories(catalog PUBLIC lib/catalog)
 target_link_libraries(catalog PUBLIC btree)
 
+add_library(binder STATIC
+  lib/binder/binder.cpp
+)
+target_include_directories(binder PUBLIC lib/binder)
+target_link_libraries(binder PUBLIC catalog parser)
+
+add_library(executor STATIC
+  lib/executor/ddl.cpp
+)
+target_include_directories(executor PUBLIC lib/executor)
+target_link_libraries(executor PUBLIC binder)
+
 # ── Shared test utilities ─────────────────────────────────────────────────────
 
 add_library(test_utils STATIC
@@ -96,10 +108,12 @@ target_link_libraries(test_utils PUBLIC GTest::gtest)
 
 enable_testing()
 
-file(GLOB VFS_TEST_SOURCES     tests/vfs/*.cpp)
-file(GLOB PAGER_TEST_SOURCES   tests/pager/*.cpp)
-file(GLOB_RECURSE BTREE_TEST_SOURCES  tests/btree/*.cpp)
-file(GLOB CATALOG_TEST_SOURCES tests/catalog/*.cpp)
+file(GLOB VFS_TEST_SOURCES      tests/vfs/*.cpp)
+file(GLOB PAGER_TEST_SOURCES    tests/pager/*.cpp)
+file(GLOB_RECURSE BTREE_TEST_SOURCES   tests/btree/*.cpp)
+file(GLOB CATALOG_TEST_SOURCES  tests/catalog/*.cpp)
+file(GLOB BINDER_TEST_SOURCES   tests/binder/*.cpp)
+file(GLOB EXECUTOR_TEST_SOURCES tests/executor/*.cpp)
 
 add_executable(vfs_tests
   tests/test_main.cpp
@@ -135,6 +149,18 @@ add_executable(catalog_tests
 target_link_libraries(catalog_tests PRIVATE test_utils catalog GTest::gtest)
 target_compile_definitions(catalog_tests PRIVATE CPPLITE_TESTING)
 
+add_executable(binder_tests
+  tests/test_main.cpp
+  ${BINDER_TEST_SOURCES}
+)
+target_link_libraries(binder_tests PRIVATE test_utils binder GTest::gtest)
+
+add_executable(executor_tests
+  tests/test_main.cpp
+  ${EXECUTOR_TEST_SOURCES}
+)
+target_link_libraries(executor_tests PRIVATE test_utils executor GTest::gtest)
+
 # ── Test discovery ────────────────────────────────────────────────────────────
 
 include(GoogleTest)
@@ -142,3 +168,5 @@ gtest_discover_tests(vfs_tests)
 gtest_discover_tests(pager_tests)
 gtest_discover_tests(btree_tests)
 gtest_discover_tests(catalog_tests)
+gtest_discover_tests(binder_tests)
+gtest_discover_tests(executor_tests)

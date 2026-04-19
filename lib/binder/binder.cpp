@@ -14,6 +14,15 @@ static const std::map<std::string, schema::DataType> TYPE_MAP = {
 
 Binder::Binder(CatalogManager *catalog) : catalog_(catalog) {}
 
+std::unique_ptr<binder::Stmt> Binder::bind(ast::Stmt *stmt) {
+  switch (stmt->type()) {
+  case StmtType::CREATE_TABLE:
+    return bind_create_table(static_cast<ast::CreateTableNode *>(stmt));
+  case StmtType::DROP_TABLE:
+    return bind_drop_table(static_cast<ast::DropTableNode *>(stmt));
+  }
+}
+
 std::unique_ptr<binder::Stmt>
 Binder::bind_create_table(ast::CreateTableNode *stmt) {
   assert(stmt != nullptr);
