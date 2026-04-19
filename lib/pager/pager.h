@@ -54,6 +54,7 @@ class Pager {
     PageNumber create_page(PagerPageType page_type, std::vector<std::byte> payload);
 
     void set_num_pages(PageNumber new_num_pages);
+    PageNumber get_num_pages();
     PagerPageType get_page_type(PageNumber pgno);
 
     void insert_freelist(PageNumber pgno);

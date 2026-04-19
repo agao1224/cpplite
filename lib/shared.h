@@ -1,16 +1,15 @@
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 
 #pragma once
 
 typedef uint64_t PageNumber;
 const size_t PAGE_SIZE = 4096;
-extern const char* DB_FILENAME;
+extern const char *DB_FILENAME;
 const uint32_t CHECKSUM = 123456;
 
-template<typename T>
-struct PagerKey {
+template <typename T> struct PagerKey {
   T value;
   static constexpr T max_value = std::numeric_limits<T>::max();
   static constexpr T min_value = std::numeric_limits<T>::min();
@@ -18,12 +17,32 @@ struct PagerKey {
   PagerKey() = default;
   PagerKey(T v) : value(v) {}
 
-  bool operator==(const PagerKey& o) const { return value == o.value; }
-  bool operator!=(const PagerKey& o) const { return value != o.value; }
-  bool operator<(const PagerKey& o)  const { return value <  o.value; }
-  bool operator>(const PagerKey& o)  const { return value >  o.value; }
-  bool operator<=(const PagerKey& o) const { return value <= o.value; }
-  bool operator>=(const PagerKey& o) const { return value >= o.value; }
+  bool operator==(const PagerKey &o) const { return value == o.value; }
+  bool operator!=(const PagerKey &o) const { return value != o.value; }
+  bool operator<(const PagerKey &o) const { return value < o.value; }
+  bool operator>(const PagerKey &o) const { return value > o.value; }
+  bool operator<=(const PagerKey &o) const { return value <= o.value; }
+  bool operator>=(const PagerKey &o) const { return value >= o.value; }
+
+  PagerKey &operator++() {
+    value++;
+    return *this;
+  };
+
+  PagerKey operator++(int) {
+    PagerKey temp = *this;
+    ++(*this);
+    return temp;
+  }
+
+  std::vector<std::byte> to_bytes() const {
+    return {
+      static_cast<std::byte>((value >> 24) & 0xFF),
+      static_cast<std::byte>((value >> 16) & 0xFF),
+      static_cast<std::byte>((value >> 8)  & 0xFF),
+      static_cast<std::byte>((value)       & 0xFF),
+    };
+  }
 };
 
 using DefaultPagerKey = PagerKey<uint32_t>;

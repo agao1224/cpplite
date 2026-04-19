@@ -22,8 +22,10 @@ TEST_F(PagerPageManagerTest, FirstPageManagerBasic) {
   ASSERT_EQ(fpm.page_type_, PAGER_FIRST_PAGE);
   ASSERT_EQ(fpm.num_pages_, 1);
   ASSERT_EQ(fpm.free_page_head_, NULL_PAGE);
+  ASSERT_EQ(fpm.next_oid_, DefaultPagerKey(1));
 
   ASSERT_EQ(fpm.get_free_page_head(), NULL_PAGE);
+  ASSERT_EQ(fpm.get_next_oid(), DefaultPagerKey(1));
 }
 
 TEST_F(PagerPageManagerTest, FirstPageManagerSetters) {
@@ -37,9 +39,14 @@ TEST_F(PagerPageManagerTest, FirstPageManagerSetters) {
   ASSERT_EQ(fpm.free_page_head_, 10);
   ASSERT_EQ(fpm.get_free_page_head(), 10);
 
+  fpm.set_next_oid(DefaultPagerKey(42));
+  ASSERT_EQ(fpm.next_oid_, DefaultPagerKey(42));
+  ASSERT_EQ(fpm.get_next_oid(), DefaultPagerKey(42));
+
   std::vector<std::byte> file_bytes = get_file_bytes(db_filename);
   PagerFirstPageHeader_t first_page_header(file_bytes);
   ASSERT_EQ(first_page_header.free_page_head, 10);
   ASSERT_EQ(first_page_header.num_pages, 3);
+  ASSERT_EQ(first_page_header.next_oid, DefaultPagerKey(42));
   ASSERT_EQ(first_page_header.page_type, PAGER_FIRST_PAGE);
 }
