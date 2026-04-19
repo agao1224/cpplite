@@ -1,9 +1,9 @@
 #include <string>
 #include <vector>
 
-#include "pager/base_page.h"
-
 #pragma once
+
+namespace schema {
 
 enum DataType { INTEGER = 0x01, BOOLEAN = 0x02, TEXT = 0x03 };
 
@@ -20,6 +20,7 @@ struct Table {
   SchemaType type;
   std::string name;
   std::string tbl_name;
-  PageNumber root_pgno;
   std::vector<Column> columns;
 };
+
+} // namespace schema

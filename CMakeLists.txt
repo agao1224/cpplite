@@ -45,6 +45,8 @@ add_library(parser STATIC
   lib/parser/SQLiteParser.cpp
   lib/parser/SQLiteParserListener.cpp
   lib/parser/SQLiteParserBaseListener.cpp
+  lib/parser/SQLiteParserVisitor.cpp
+  lib/parser/SQLiteParserBaseVisitor.cpp
 )
 target_include_directories(parser PUBLIC
   lib/parser

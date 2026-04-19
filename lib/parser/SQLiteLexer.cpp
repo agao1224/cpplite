@@ -1,5 +1,5 @@
 
-// Generated from SQLiteLexer.g4 by ANTLR 4.13.2
+// Generated from grammar/SQLiteLexer.g4 by ANTLR 4.13.2
 
 
 #include "SQLiteLexer.h"

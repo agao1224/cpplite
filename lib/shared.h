@@ -46,3 +46,5 @@ template <typename T> struct PagerKey {
 };
 
 using DefaultPagerKey = PagerKey<uint32_t>;
+
+enum class StmtType { CREATE_TABLE, DROP_TABLE };
