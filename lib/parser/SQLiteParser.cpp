@@ -1,8 +1,9 @@
 
-// Generated from SQLiteParser.g4 by ANTLR 4.13.2
+// Generated from grammar/SQLiteParser.g4 by ANTLR 4.13.2
 
 
 #include "SQLiteParserListener.h"
+#include "SQLiteParserVisitor.h"
 
 #include "SQLiteParser.h"
 
@@ -915,6 +916,14 @@ void SQLiteParser::ParseContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitParse(this);
 }
 
+
+std::any SQLiteParser::ParseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitParse(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::ParseContext* SQLiteParser::parse() {
   ParseContext *_localctx = _tracker.createInstance<ParseContext>(_ctx, getState());
   enterRule(_localctx, 0, SQLiteParser::RuleParse);
@@ -980,6 +989,14 @@ void SQLiteParser::Sql_stmt_listContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitSql_stmt_list(this);
+}
+
+
+std::any SQLiteParser::Sql_stmt_listContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSql_stmt_list(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Sql_stmt_listContext* SQLiteParser::sql_stmt_list() {
@@ -1160,6 +1177,14 @@ void SQLiteParser::Sql_stmtContext::exitRule(tree::ParseTreeListener *listener) 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitSql_stmt(this);
+}
+
+
+std::any SQLiteParser::Sql_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSql_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Sql_stmtContext* SQLiteParser::sql_stmt() {
@@ -1420,6 +1445,14 @@ void SQLiteParser::Alter_table_stmtContext::exitRule(tree::ParseTreeListener *li
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitAlter_table_stmt(this);
+}
+
+
+std::any SQLiteParser::Alter_table_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAlter_table_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Alter_table_stmtContext* SQLiteParser::alter_table_stmt() {
@@ -1693,6 +1726,14 @@ void SQLiteParser::Analyze_stmtContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitAnalyze_stmt(this);
 }
 
+
+std::any SQLiteParser::Analyze_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAnalyze_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Analyze_stmtContext* SQLiteParser::analyze_stmt() {
   Analyze_stmtContext *_localctx = _tracker.createInstance<Analyze_stmtContext>(_ctx, getState());
   enterRule(_localctx, 8, SQLiteParser::RuleAnalyze_stmt);
@@ -1796,6 +1837,14 @@ void SQLiteParser::Attach_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitAttach_stmt(this);
 }
 
+
+std::any SQLiteParser::Attach_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAttach_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Attach_stmtContext* SQLiteParser::attach_stmt() {
   Attach_stmtContext *_localctx = _tracker.createInstance<Attach_stmtContext>(_ctx, getState());
   enterRule(_localctx, 10, SQLiteParser::RuleAttach_stmt);
@@ -1882,6 +1931,14 @@ void SQLiteParser::Begin_stmtContext::exitRule(tree::ParseTreeListener *listener
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitBegin_stmt(this);
+}
+
+
+std::any SQLiteParser::Begin_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitBegin_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Begin_stmtContext* SQLiteParser::begin_stmt() {
@@ -1971,6 +2028,14 @@ void SQLiteParser::Commit_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitCommit_stmt(this);
 }
 
+
+std::any SQLiteParser::Commit_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCommit_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Commit_stmtContext* SQLiteParser::commit_stmt() {
   Commit_stmtContext *_localctx = _tracker.createInstance<Commit_stmtContext>(_ctx, getState());
   enterRule(_localctx, 14, SQLiteParser::RuleCommit_stmt);
@@ -2056,6 +2121,14 @@ void SQLiteParser::Rollback_stmtContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitRollback_stmt(this);
+}
+
+
+std::any SQLiteParser::Rollback_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitRollback_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Rollback_stmtContext* SQLiteParser::rollback_stmt() {
@@ -2147,6 +2220,14 @@ void SQLiteParser::Savepoint_stmtContext::exitRule(tree::ParseTreeListener *list
     parserListener->exitSavepoint_stmt(this);
 }
 
+
+std::any SQLiteParser::Savepoint_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSavepoint_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Savepoint_stmtContext* SQLiteParser::savepoint_stmt() {
   Savepoint_stmtContext *_localctx = _tracker.createInstance<Savepoint_stmtContext>(_ctx, getState());
   enterRule(_localctx, 18, SQLiteParser::RuleSavepoint_stmt);
@@ -2208,6 +2289,14 @@ void SQLiteParser::Release_stmtContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitRelease_stmt(this);
+}
+
+
+std::any SQLiteParser::Release_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitRelease_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Release_stmtContext* SQLiteParser::release_stmt() {
@@ -2350,6 +2439,14 @@ void SQLiteParser::Create_index_stmtContext::exitRule(tree::ParseTreeListener *l
     parserListener->exitCreate_index_stmt(this);
 }
 
+
+std::any SQLiteParser::Create_index_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCreate_index_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Create_index_stmtContext* SQLiteParser::create_index_stmt() {
   Create_index_stmtContext *_localctx = _tracker.createInstance<Create_index_stmtContext>(_ctx, getState());
   enterRule(_localctx, 22, SQLiteParser::RuleCreate_index_stmt);
@@ -2490,6 +2587,14 @@ void SQLiteParser::Indexed_columnContext::exitRule(tree::ParseTreeListener *list
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitIndexed_column(this);
+}
+
+
+std::any SQLiteParser::Indexed_columnContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitIndexed_column(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Indexed_columnContext* SQLiteParser::indexed_column() {
@@ -2644,6 +2749,14 @@ void SQLiteParser::Create_table_stmtContext::exitRule(tree::ParseTreeListener *l
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitCreate_table_stmt(this);
+}
+
+
+std::any SQLiteParser::Create_table_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCreate_table_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Create_table_stmtContext* SQLiteParser::create_table_stmt() {
@@ -2844,6 +2957,14 @@ void SQLiteParser::Table_optionsContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitTable_options(this);
 }
 
+
+std::any SQLiteParser::Table_optionsContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_options(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Table_optionsContext* SQLiteParser::table_options() {
   Table_optionsContext *_localctx = _tracker.createInstance<Table_optionsContext>(_ctx, getState());
   enterRule(_localctx, 28, SQLiteParser::RuleTable_options);
@@ -2958,6 +3079,14 @@ void SQLiteParser::Column_defContext::exitRule(tree::ParseTreeListener *listener
     parserListener->exitColumn_def(this);
 }
 
+
+std::any SQLiteParser::Column_defContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitColumn_def(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Column_defContext* SQLiteParser::column_def() {
   Column_defContext *_localctx = _tracker.createInstance<Column_defContext>(_ctx, getState());
   enterRule(_localctx, 30, SQLiteParser::RuleColumn_def);
@@ -3059,6 +3188,14 @@ void SQLiteParser::Type_nameContext::exitRule(tree::ParseTreeListener *listener)
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitType_name(this);
+}
+
+
+std::any SQLiteParser::Type_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitType_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Type_nameContext* SQLiteParser::type_name() {
@@ -3256,6 +3393,14 @@ void SQLiteParser::Column_constraintContext::exitRule(tree::ParseTreeListener *l
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitColumn_constraint(this);
+}
+
+
+std::any SQLiteParser::Column_constraintContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitColumn_constraint(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Column_constraintContext* SQLiteParser::column_constraint() {
@@ -3511,6 +3656,14 @@ void SQLiteParser::Signed_numberContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitSigned_number(this);
 }
 
+
+std::any SQLiteParser::Signed_numberContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSigned_number(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Signed_numberContext* SQLiteParser::signed_number() {
   Signed_numberContext *_localctx = _tracker.createInstance<Signed_numberContext>(_ctx, getState());
   enterRule(_localctx, 36, SQLiteParser::RuleSigned_number);
@@ -3650,6 +3803,14 @@ void SQLiteParser::Table_constraintContext::exitRule(tree::ParseTreeListener *li
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitTable_constraint(this);
+}
+
+
+std::any SQLiteParser::Table_constraintContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_constraint(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Table_constraintContext* SQLiteParser::table_constraint() {
@@ -3955,6 +4116,14 @@ void SQLiteParser::Foreign_key_clauseContext::exitRule(tree::ParseTreeListener *
     parserListener->exitForeign_key_clause(this);
 }
 
+
+std::any SQLiteParser::Foreign_key_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitForeign_key_clause(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Foreign_key_clauseContext* SQLiteParser::foreign_key_clause() {
   Foreign_key_clauseContext *_localctx = _tracker.createInstance<Foreign_key_clauseContext>(_ctx, getState());
   enterRule(_localctx, 40, SQLiteParser::RuleForeign_key_clause);
@@ -4179,6 +4348,14 @@ void SQLiteParser::Conflict_clauseContext::exitRule(tree::ParseTreeListener *lis
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitConflict_clause(this);
+}
+
+
+std::any SQLiteParser::Conflict_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitConflict_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Conflict_clauseContext* SQLiteParser::conflict_clause() {
@@ -4407,6 +4584,14 @@ void SQLiteParser::Create_trigger_stmtContext::exitRule(tree::ParseTreeListener 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitCreate_trigger_stmt(this);
+}
+
+
+std::any SQLiteParser::Create_trigger_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCreate_trigger_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Create_trigger_stmtContext* SQLiteParser::create_trigger_stmt() {
@@ -4737,6 +4922,14 @@ void SQLiteParser::Create_view_stmtContext::exitRule(tree::ParseTreeListener *li
     parserListener->exitCreate_view_stmt(this);
 }
 
+
+std::any SQLiteParser::Create_view_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCreate_view_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Create_view_stmtContext* SQLiteParser::create_view_stmt() {
   Create_view_stmtContext *_localctx = _tracker.createInstance<Create_view_stmtContext>(_ctx, getState());
   enterRule(_localctx, 46, SQLiteParser::RuleCreate_view_stmt);
@@ -4938,6 +5131,14 @@ void SQLiteParser::Create_virtual_table_stmtContext::exitRule(tree::ParseTreeLis
     parserListener->exitCreate_virtual_table_stmt(this);
 }
 
+
+std::any SQLiteParser::Create_virtual_table_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCreate_virtual_table_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Create_virtual_table_stmtContext* SQLiteParser::create_virtual_table_stmt() {
   Create_virtual_table_stmtContext *_localctx = _tracker.createInstance<Create_virtual_table_stmtContext>(_ctx, getState());
   enterRule(_localctx, 48, SQLiteParser::RuleCreate_virtual_table_stmt);
@@ -5078,6 +5279,14 @@ void SQLiteParser::With_clauseContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitWith_clause(this);
 }
 
+
+std::any SQLiteParser::With_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitWith_clause(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::With_clauseContext* SQLiteParser::with_clause() {
   With_clauseContext *_localctx = _tracker.createInstance<With_clauseContext>(_ctx, getState());
   enterRule(_localctx, 50, SQLiteParser::RuleWith_clause);
@@ -5183,6 +5392,14 @@ void SQLiteParser::Common_table_expressionContext::exitRule(tree::ParseTreeListe
     parserListener->exitCommon_table_expression(this);
 }
 
+
+std::any SQLiteParser::Common_table_expressionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCommon_table_expression(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Common_table_expressionContext* SQLiteParser::common_table_expression() {
   Common_table_expressionContext *_localctx = _tracker.createInstance<Common_table_expressionContext>(_ctx, getState());
   enterRule(_localctx, 52, SQLiteParser::RuleCommon_table_expression);
@@ -5285,6 +5502,14 @@ void SQLiteParser::Cte_table_nameContext::exitRule(tree::ParseTreeListener *list
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitCte_table_name(this);
+}
+
+
+std::any SQLiteParser::Cte_table_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCte_table_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Cte_table_nameContext* SQLiteParser::cte_table_name() {
@@ -5397,6 +5622,14 @@ void SQLiteParser::Delete_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitDelete_stmt(this);
 }
 
+
+std::any SQLiteParser::Delete_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitDelete_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Delete_stmtContext* SQLiteParser::delete_stmt() {
   Delete_stmtContext *_localctx = _tracker.createInstance<Delete_stmtContext>(_ctx, getState());
   enterRule(_localctx, 56, SQLiteParser::RuleDelete_stmt);
@@ -5505,6 +5738,14 @@ void SQLiteParser::Detach_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitDetach_stmt(this);
 }
 
+
+std::any SQLiteParser::Detach_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitDetach_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Detach_stmtContext* SQLiteParser::detach_stmt() {
   Detach_stmtContext *_localctx = _tracker.createInstance<Detach_stmtContext>(_ctx, getState());
   enterRule(_localctx, 58, SQLiteParser::RuleDetach_stmt);
@@ -5609,6 +5850,14 @@ void SQLiteParser::Drop_stmtContext::exitRule(tree::ParseTreeListener *listener)
     parserListener->exitDrop_stmt(this);
 }
 
+
+std::any SQLiteParser::Drop_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitDrop_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Drop_stmtContext* SQLiteParser::drop_stmt() {
   Drop_stmtContext *_localctx = _tracker.createInstance<Drop_stmtContext>(_ctx, getState());
   enterRule(_localctx, 60, SQLiteParser::RuleDrop_stmt);
@@ -5709,6 +5958,14 @@ void SQLiteParser::ExprContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitExpr(this);
 }
 
+
+std::any SQLiteParser::ExprContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::ExprContext* SQLiteParser::expr() {
   ExprContext *_localctx = _tracker.createInstance<ExprContext>(_ctx, getState());
   enterRule(_localctx, 62, SQLiteParser::RuleExpr);
@@ -5772,6 +6029,14 @@ void SQLiteParser::Expr_orContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_or(this);
+}
+
+
+std::any SQLiteParser::Expr_orContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_or(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_orContext* SQLiteParser::expr_or() {
@@ -5852,6 +6117,14 @@ void SQLiteParser::Expr_andContext::exitRule(tree::ParseTreeListener *listener) 
     parserListener->exitExpr_and(this);
 }
 
+
+std::any SQLiteParser::Expr_andContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_and(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Expr_andContext* SQLiteParser::expr_and() {
   Expr_andContext *_localctx = _tracker.createInstance<Expr_andContext>(_ctx, getState());
   enterRule(_localctx, 66, SQLiteParser::RuleExpr_and);
@@ -5924,6 +6197,14 @@ void SQLiteParser::Expr_notContext::exitRule(tree::ParseTreeListener *listener) 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_not(this);
+}
+
+
+std::any SQLiteParser::Expr_notContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_not(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_notContext* SQLiteParser::expr_not() {
@@ -6210,6 +6491,14 @@ void SQLiteParser::Expr_binaryContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_binary(this);
+}
+
+
+std::any SQLiteParser::Expr_binaryContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_binary(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_binaryContext* SQLiteParser::expr_binary() {
@@ -6588,6 +6877,14 @@ void SQLiteParser::Expr_comparisonContext::exitRule(tree::ParseTreeListener *lis
     parserListener->exitExpr_comparison(this);
 }
 
+
+std::any SQLiteParser::Expr_comparisonContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_comparison(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Expr_comparisonContext* SQLiteParser::expr_comparison() {
   Expr_comparisonContext *_localctx = _tracker.createInstance<Expr_comparisonContext>(_ctx, getState());
   enterRule(_localctx, 72, SQLiteParser::RuleExpr_comparison);
@@ -6699,6 +6996,14 @@ void SQLiteParser::Expr_bitwiseContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitExpr_bitwise(this);
 }
 
+
+std::any SQLiteParser::Expr_bitwiseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_bitwise(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Expr_bitwiseContext* SQLiteParser::expr_bitwise() {
   Expr_bitwiseContext *_localctx = _tracker.createInstance<Expr_bitwiseContext>(_ctx, getState());
   enterRule(_localctx, 74, SQLiteParser::RuleExpr_bitwise);
@@ -6792,6 +7097,14 @@ void SQLiteParser::Expr_additionContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_addition(this);
+}
+
+
+std::any SQLiteParser::Expr_additionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_addition(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_additionContext* SQLiteParser::expr_addition() {
@@ -6899,6 +7212,14 @@ void SQLiteParser::Expr_multiplicationContext::exitRule(tree::ParseTreeListener 
     parserListener->exitExpr_multiplication(this);
 }
 
+
+std::any SQLiteParser::Expr_multiplicationContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_multiplication(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Expr_multiplicationContext* SQLiteParser::expr_multiplication() {
   Expr_multiplicationContext *_localctx = _tracker.createInstance<Expr_multiplicationContext>(_ctx, getState());
   enterRule(_localctx, 78, SQLiteParser::RuleExpr_multiplication);
@@ -7002,6 +7323,14 @@ void SQLiteParser::Expr_stringContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitExpr_string(this);
 }
 
+
+std::any SQLiteParser::Expr_stringContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_string(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Expr_stringContext* SQLiteParser::expr_string() {
   Expr_stringContext *_localctx = _tracker.createInstance<Expr_stringContext>(_ctx, getState());
   enterRule(_localctx, 80, SQLiteParser::RuleExpr_string);
@@ -7091,6 +7420,14 @@ void SQLiteParser::Expr_collateContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_collate(this);
+}
+
+
+std::any SQLiteParser::Expr_collateContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_collate(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_collateContext* SQLiteParser::expr_collate() {
@@ -7183,6 +7520,14 @@ void SQLiteParser::Expr_unaryContext::exitRule(tree::ParseTreeListener *listener
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_unary(this);
+}
+
+
+std::any SQLiteParser::Expr_unaryContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_unary(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_unaryContext* SQLiteParser::expr_unary() {
@@ -7312,6 +7657,14 @@ void SQLiteParser::Expr_baseContext::exitRule(tree::ParseTreeListener *listener)
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_base(this);
+}
+
+
+std::any SQLiteParser::Expr_baseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_base(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_baseContext* SQLiteParser::expr_base() {
@@ -7547,6 +7900,14 @@ void SQLiteParser::Expr_recursiveContext::exitRule(tree::ParseTreeListener *list
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitExpr_recursive(this);
+}
+
+
+std::any SQLiteParser::Expr_recursiveContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitExpr_recursive(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Expr_recursiveContext* SQLiteParser::expr_recursive() {
@@ -7922,6 +8283,14 @@ void SQLiteParser::Raise_functionContext::exitRule(tree::ParseTreeListener *list
     parserListener->exitRaise_function(this);
 }
 
+
+std::any SQLiteParser::Raise_functionContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitRaise_function(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Raise_functionContext* SQLiteParser::raise_function() {
   Raise_functionContext *_localctx = _tracker.createInstance<Raise_functionContext>(_ctx, getState());
   enterRule(_localctx, 90, SQLiteParser::RuleRaise_function);
@@ -8045,6 +8414,14 @@ void SQLiteParser::Literal_valueContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitLiteral_value(this);
 }
 
+
+std::any SQLiteParser::Literal_valueContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitLiteral_value(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Literal_valueContext* SQLiteParser::literal_value() {
   Literal_valueContext *_localctx = _tracker.createInstance<Literal_valueContext>(_ctx, getState());
   enterRule(_localctx, 92, SQLiteParser::RuleLiteral_value);
@@ -8132,6 +8509,14 @@ void SQLiteParser::Percentile_clauseContext::exitRule(tree::ParseTreeListener *l
     parserListener->exitPercentile_clause(this);
 }
 
+
+std::any SQLiteParser::Percentile_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitPercentile_clause(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Percentile_clauseContext* SQLiteParser::percentile_clause() {
   Percentile_clauseContext *_localctx = _tracker.createInstance<Percentile_clauseContext>(_ctx, getState());
   enterRule(_localctx, 94, SQLiteParser::RulePercentile_clause);
@@ -8215,6 +8600,14 @@ void SQLiteParser::Value_rowContext::exitRule(tree::ParseTreeListener *listener)
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitValue_row(this);
+}
+
+
+std::any SQLiteParser::Value_rowContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitValue_row(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Value_rowContext* SQLiteParser::value_row() {
@@ -8301,6 +8694,14 @@ void SQLiteParser::Values_clauseContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitValues_clause(this);
+}
+
+
+std::any SQLiteParser::Values_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitValues_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Values_clauseContext* SQLiteParser::values_clause() {
@@ -8469,6 +8870,14 @@ void SQLiteParser::Insert_stmtContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitInsert_stmt(this);
+}
+
+
+std::any SQLiteParser::Insert_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitInsert_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Insert_stmtContext* SQLiteParser::insert_stmt() {
@@ -8700,6 +9109,14 @@ void SQLiteParser::Returning_clauseContext::exitRule(tree::ParseTreeListener *li
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitReturning_clause(this);
+}
+
+
+std::any SQLiteParser::Returning_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitReturning_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Returning_clauseContext* SQLiteParser::returning_clause() {
@@ -9138,6 +9555,14 @@ void SQLiteParser::Upsert_clauseContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitUpsert_clause(this);
 }
 
+
+std::any SQLiteParser::Upsert_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitUpsert_clause(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Upsert_clauseContext* SQLiteParser::upsert_clause() {
   Upsert_clauseContext *_localctx = _tracker.createInstance<Upsert_clauseContext>(_ctx, getState());
   enterRule(_localctx, 104, SQLiteParser::RuleUpsert_clause);
@@ -9534,6 +9959,14 @@ void SQLiteParser::Pragma_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitPragma_stmt(this);
 }
 
+
+std::any SQLiteParser::Pragma_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitPragma_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Pragma_stmtContext* SQLiteParser::pragma_stmt() {
   Pragma_stmtContext *_localctx = _tracker.createInstance<Pragma_stmtContext>(_ctx, getState());
   enterRule(_localctx, 106, SQLiteParser::RulePragma_stmt);
@@ -9641,6 +10074,14 @@ void SQLiteParser::Pragma_valueContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitPragma_value(this);
 }
 
+
+std::any SQLiteParser::Pragma_valueContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitPragma_value(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Pragma_valueContext* SQLiteParser::pragma_value() {
   Pragma_valueContext *_localctx = _tracker.createInstance<Pragma_valueContext>(_ctx, getState());
   enterRule(_localctx, 108, SQLiteParser::RulePragma_value);
@@ -9736,6 +10177,14 @@ void SQLiteParser::Reindex_stmtContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitReindex_stmt(this);
+}
+
+
+std::any SQLiteParser::Reindex_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitReindex_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Reindex_stmtContext* SQLiteParser::reindex_stmt() {
@@ -9865,6 +10314,14 @@ void SQLiteParser::Select_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitSelect_stmt(this);
 }
 
+
+std::any SQLiteParser::Select_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSelect_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Select_stmtContext* SQLiteParser::select_stmt() {
   Select_stmtContext *_localctx = _tracker.createInstance<Select_stmtContext>(_ctx, getState());
   enterRule(_localctx, 112, SQLiteParser::RuleSelect_stmt);
@@ -9975,6 +10432,14 @@ void SQLiteParser::Join_clauseContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitJoin_clause(this);
+}
+
+
+std::any SQLiteParser::Join_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitJoin_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Join_clauseContext* SQLiteParser::join_clause() {
@@ -10145,6 +10610,14 @@ void SQLiteParser::Select_coreContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitSelect_core(this);
+}
+
+
+std::any SQLiteParser::Select_coreContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSelect_core(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Select_coreContext* SQLiteParser::select_core() {
@@ -10407,6 +10880,14 @@ void SQLiteParser::Table_or_subqueryContext::exitRule(tree::ParseTreeListener *l
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitTable_or_subquery(this);
+}
+
+
+std::any SQLiteParser::Table_or_subqueryContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_or_subquery(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Table_or_subqueryContext* SQLiteParser::table_or_subquery() {
@@ -10682,6 +11163,14 @@ void SQLiteParser::Result_columnContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitResult_column(this);
 }
 
+
+std::any SQLiteParser::Result_columnContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitResult_column(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Result_columnContext* SQLiteParser::result_column() {
   Result_columnContext *_localctx = _tracker.createInstance<Result_columnContext>(_ctx, getState());
   enterRule(_localctx, 120, SQLiteParser::RuleResult_column);
@@ -10815,6 +11304,14 @@ void SQLiteParser::Join_operatorContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitJoin_operator(this);
+}
+
+
+std::any SQLiteParser::Join_operatorContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitJoin_operator(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Join_operatorContext* SQLiteParser::join_operator() {
@@ -10980,6 +11477,14 @@ void SQLiteParser::Join_constraintContext::exitRule(tree::ParseTreeListener *lis
     parserListener->exitJoin_constraint(this);
 }
 
+
+std::any SQLiteParser::Join_constraintContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitJoin_constraint(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Join_constraintContext* SQLiteParser::join_constraint() {
   Join_constraintContext *_localctx = _tracker.createInstance<Join_constraintContext>(_ctx, getState());
   enterRule(_localctx, 124, SQLiteParser::RuleJoin_constraint);
@@ -11081,6 +11586,14 @@ void SQLiteParser::Compound_operatorContext::exitRule(tree::ParseTreeListener *l
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitCompound_operator(this);
+}
+
+
+std::any SQLiteParser::Compound_operatorContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCompound_operator(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Compound_operatorContext* SQLiteParser::compound_operator() {
@@ -11267,6 +11780,14 @@ void SQLiteParser::Update_stmtContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitUpdate_stmt(this);
+}
+
+
+std::any SQLiteParser::Update_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitUpdate_stmt(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Update_stmtContext* SQLiteParser::update_stmt() {
@@ -11665,6 +12186,14 @@ void SQLiteParser::Column_name_listContext::exitRule(tree::ParseTreeListener *li
     parserListener->exitColumn_name_list(this);
 }
 
+
+std::any SQLiteParser::Column_name_listContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitColumn_name_list(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Column_name_listContext* SQLiteParser::column_name_list() {
   Column_name_listContext *_localctx = _tracker.createInstance<Column_name_listContext>(_ctx, getState());
   enterRule(_localctx, 130, SQLiteParser::RuleColumn_name_list);
@@ -11765,6 +12294,14 @@ void SQLiteParser::Qualified_table_nameContext::exitRule(tree::ParseTreeListener
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitQualified_table_name(this);
+}
+
+
+std::any SQLiteParser::Qualified_table_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitQualified_table_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Qualified_table_nameContext* SQLiteParser::qualified_table_name() {
@@ -11892,6 +12429,14 @@ void SQLiteParser::Vacuum_stmtContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitVacuum_stmt(this);
 }
 
+
+std::any SQLiteParser::Vacuum_stmtContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitVacuum_stmt(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Vacuum_stmtContext* SQLiteParser::vacuum_stmt() {
   Vacuum_stmtContext *_localctx = _tracker.createInstance<Vacuum_stmtContext>(_ctx, getState());
   enterRule(_localctx, 134, SQLiteParser::RuleVacuum_stmt);
@@ -11981,6 +12526,14 @@ void SQLiteParser::Filter_clauseContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFilter_clause(this);
+}
+
+
+std::any SQLiteParser::Filter_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFilter_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Filter_clauseContext* SQLiteParser::filter_clause() {
@@ -12082,6 +12635,14 @@ void SQLiteParser::Window_defnContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitWindow_defn(this);
+}
+
+
+std::any SQLiteParser::Window_defnContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitWindow_defn(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Window_defnContext* SQLiteParser::window_defn() {
@@ -12240,6 +12801,14 @@ void SQLiteParser::Over_clauseContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitOver_clause(this);
+}
+
+
+std::any SQLiteParser::Over_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitOver_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Over_clauseContext* SQLiteParser::over_clause() {
@@ -12494,6 +13063,14 @@ void SQLiteParser::Frame_specContext::exitRule(tree::ParseTreeListener *listener
     parserListener->exitFrame_spec(this);
 }
 
+
+std::any SQLiteParser::Frame_specContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFrame_spec(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Frame_specContext* SQLiteParser::frame_spec() {
   Frame_specContext *_localctx = _tracker.createInstance<Frame_specContext>(_ctx, getState());
   enterRule(_localctx, 142, SQLiteParser::RuleFrame_spec);
@@ -12616,6 +13193,14 @@ void SQLiteParser::Frame_clauseContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFrame_clause(this);
+}
+
+
+std::any SQLiteParser::Frame_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFrame_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Frame_clauseContext* SQLiteParser::frame_clause() {
@@ -12831,6 +13416,14 @@ void SQLiteParser::Order_clauseContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitOrder_clause(this);
 }
 
+
+std::any SQLiteParser::Order_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitOrder_clause(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Order_clauseContext* SQLiteParser::order_clause() {
   Order_clauseContext *_localctx = _tracker.createInstance<Order_clauseContext>(_ctx, getState());
   enterRule(_localctx, 146, SQLiteParser::RuleOrder_clause);
@@ -12915,6 +13508,14 @@ void SQLiteParser::Limit_clauseContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitLimit_clause(this);
+}
+
+
+std::any SQLiteParser::Limit_clauseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitLimit_clause(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Limit_clauseContext* SQLiteParser::limit_clause() {
@@ -13014,6 +13615,14 @@ void SQLiteParser::Ordering_termContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitOrdering_term(this);
 }
 
+
+std::any SQLiteParser::Ordering_termContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitOrdering_term(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Ordering_termContext* SQLiteParser::ordering_term() {
   Ordering_termContext *_localctx = _tracker.createInstance<Ordering_termContext>(_ctx, getState());
   enterRule(_localctx, 150, SQLiteParser::RuleOrdering_term);
@@ -13111,6 +13720,14 @@ void SQLiteParser::Asc_descContext::exitRule(tree::ParseTreeListener *listener) 
     parserListener->exitAsc_desc(this);
 }
 
+
+std::any SQLiteParser::Asc_descContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAsc_desc(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Asc_descContext* SQLiteParser::asc_desc() {
   Asc_descContext *_localctx = _tracker.createInstance<Asc_descContext>(_ctx, getState());
   enterRule(_localctx, 152, SQLiteParser::RuleAsc_desc);
@@ -13188,6 +13805,14 @@ void SQLiteParser::Frame_leftContext::exitRule(tree::ParseTreeListener *listener
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFrame_left(this);
+}
+
+
+std::any SQLiteParser::Frame_leftContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFrame_left(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Frame_leftContext* SQLiteParser::frame_left() {
@@ -13289,6 +13914,14 @@ void SQLiteParser::Frame_rightContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitFrame_right(this);
 }
 
+
+std::any SQLiteParser::Frame_rightContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFrame_right(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Frame_rightContext* SQLiteParser::frame_right() {
   Frame_rightContext *_localctx = _tracker.createInstance<Frame_rightContext>(_ctx, getState());
   enterRule(_localctx, 156, SQLiteParser::RuleFrame_right);
@@ -13384,6 +14017,14 @@ void SQLiteParser::Frame_singleContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitFrame_single(this);
 }
 
+
+std::any SQLiteParser::Frame_singleContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFrame_single(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Frame_singleContext* SQLiteParser::frame_single() {
   Frame_singleContext *_localctx = _tracker.createInstance<Frame_singleContext>(_ctx, getState());
   enterRule(_localctx, 158, SQLiteParser::RuleFrame_single);
@@ -13458,6 +14099,14 @@ void SQLiteParser::Error_messageContext::exitRule(tree::ParseTreeListener *liste
     parserListener->exitError_message(this);
 }
 
+
+std::any SQLiteParser::Error_messageContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitError_message(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Error_messageContext* SQLiteParser::error_message() {
   Error_messageContext *_localctx = _tracker.createInstance<Error_messageContext>(_ctx, getState());
   enterRule(_localctx, 160, SQLiteParser::RuleError_message);
@@ -13509,6 +14158,14 @@ void SQLiteParser::FilenameContext::exitRule(tree::ParseTreeListener *listener) 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFilename(this);
+}
+
+
+std::any SQLiteParser::FilenameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFilename(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::FilenameContext* SQLiteParser::filename() {
@@ -13566,6 +14223,14 @@ void SQLiteParser::Module_argumentContext::exitRule(tree::ParseTreeListener *lis
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitModule_argument(this);
+}
+
+
+std::any SQLiteParser::Module_argumentContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitModule_argument(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Module_argumentContext* SQLiteParser::module_argument() {
@@ -13651,6 +14316,14 @@ void SQLiteParser::Module_argument_outerContext::exitRule(tree::ParseTreeListene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitModule_argument_outer(this);
+}
+
+
+std::any SQLiteParser::Module_argument_outerContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitModule_argument_outer(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Module_argument_outerContext* SQLiteParser::module_argument_outer() {
@@ -13944,6 +14617,14 @@ void SQLiteParser::Module_argument_innerContext::exitRule(tree::ParseTreeListene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitModule_argument_inner(this);
+}
+
+
+std::any SQLiteParser::Module_argument_innerContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitModule_argument_inner(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Module_argument_innerContext* SQLiteParser::module_argument_inner() {
@@ -14565,6 +15246,14 @@ void SQLiteParser::Fallback_excluding_conflictsContext::exitRule(tree::ParseTree
     parserListener->exitFallback_excluding_conflicts(this);
 }
 
+
+std::any SQLiteParser::Fallback_excluding_conflictsContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFallback_excluding_conflicts(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Fallback_excluding_conflictsContext* SQLiteParser::fallback_excluding_conflicts() {
   Fallback_excluding_conflictsContext *_localctx = _tracker.createInstance<Fallback_excluding_conflictsContext>(_ctx, getState());
   enterRule(_localctx, 170, SQLiteParser::RuleFallback_excluding_conflicts);
@@ -14657,6 +15346,14 @@ void SQLiteParser::Join_keywordContext::exitRule(tree::ParseTreeListener *listen
     parserListener->exitJoin_keyword(this);
 }
 
+
+std::any SQLiteParser::Join_keywordContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitJoin_keyword(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Join_keywordContext* SQLiteParser::join_keyword() {
   Join_keywordContext *_localctx = _tracker.createInstance<Join_keywordContext>(_ctx, getState());
   enterRule(_localctx, 172, SQLiteParser::RuleJoin_keyword);
@@ -14725,6 +15422,14 @@ void SQLiteParser::FallbackContext::exitRule(tree::ParseTreeListener *listener) 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFallback(this);
+}
+
+
+std::any SQLiteParser::FallbackContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFallback(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::FallbackContext* SQLiteParser::fallback() {
@@ -14896,6 +15601,14 @@ void SQLiteParser::NameContext::exitRule(tree::ParseTreeListener *listener) {
     parserListener->exitName(this);
 }
 
+
+std::any SQLiteParser::NameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitName(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::NameContext* SQLiteParser::name() {
   NameContext *_localctx = _tracker.createInstance<NameContext>(_ctx, getState());
   enterRule(_localctx, 176, SQLiteParser::RuleName);
@@ -14947,6 +15660,14 @@ void SQLiteParser::Function_nameContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitFunction_name(this);
+}
+
+
+std::any SQLiteParser::Function_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitFunction_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Function_nameContext* SQLiteParser::function_name() {
@@ -15002,6 +15723,14 @@ void SQLiteParser::Schema_nameContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitSchema_name(this);
 }
 
+
+std::any SQLiteParser::Schema_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSchema_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Schema_nameContext* SQLiteParser::schema_name() {
   Schema_nameContext *_localctx = _tracker.createInstance<Schema_nameContext>(_ctx, getState());
   enterRule(_localctx, 180, SQLiteParser::RuleSchema_name);
@@ -15053,6 +15782,14 @@ void SQLiteParser::Table_nameContext::exitRule(tree::ParseTreeListener *listener
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitTable_name(this);
+}
+
+
+std::any SQLiteParser::Table_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Table_nameContext* SQLiteParser::table_name() {
@@ -15108,6 +15845,14 @@ void SQLiteParser::Table_or_index_nameContext::exitRule(tree::ParseTreeListener 
     parserListener->exitTable_or_index_name(this);
 }
 
+
+std::any SQLiteParser::Table_or_index_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_or_index_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Table_or_index_nameContext* SQLiteParser::table_or_index_name() {
   Table_or_index_nameContext *_localctx = _tracker.createInstance<Table_or_index_nameContext>(_ctx, getState());
   enterRule(_localctx, 184, SQLiteParser::RuleTable_or_index_name);
@@ -15159,6 +15904,14 @@ void SQLiteParser::Column_nameContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitColumn_name(this);
+}
+
+
+std::any SQLiteParser::Column_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitColumn_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Column_nameContext* SQLiteParser::column_name() {
@@ -15214,6 +15967,14 @@ void SQLiteParser::Column_name_excluding_stringContext::exitRule(tree::ParseTree
     parserListener->exitColumn_name_excluding_string(this);
 }
 
+
+std::any SQLiteParser::Column_name_excluding_stringContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitColumn_name_excluding_string(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Column_name_excluding_stringContext* SQLiteParser::column_name_excluding_string() {
   Column_name_excluding_stringContext *_localctx = _tracker.createInstance<Column_name_excluding_stringContext>(_ctx, getState());
   enterRule(_localctx, 188, SQLiteParser::RuleColumn_name_excluding_string);
@@ -15265,6 +16026,14 @@ void SQLiteParser::Column_aliasContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitColumn_alias(this);
+}
+
+
+std::any SQLiteParser::Column_aliasContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitColumn_alias(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Column_aliasContext* SQLiteParser::column_alias() {
@@ -15320,6 +16089,14 @@ void SQLiteParser::Collation_nameContext::exitRule(tree::ParseTreeListener *list
     parserListener->exitCollation_name(this);
 }
 
+
+std::any SQLiteParser::Collation_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitCollation_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Collation_nameContext* SQLiteParser::collation_name() {
   Collation_nameContext *_localctx = _tracker.createInstance<Collation_nameContext>(_ctx, getState());
   enterRule(_localctx, 192, SQLiteParser::RuleCollation_name);
@@ -15371,6 +16148,14 @@ void SQLiteParser::Foreign_tableContext::exitRule(tree::ParseTreeListener *liste
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitForeign_table(this);
+}
+
+
+std::any SQLiteParser::Foreign_tableContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitForeign_table(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Foreign_tableContext* SQLiteParser::foreign_table() {
@@ -15426,6 +16211,14 @@ void SQLiteParser::Index_nameContext::exitRule(tree::ParseTreeListener *listener
     parserListener->exitIndex_name(this);
 }
 
+
+std::any SQLiteParser::Index_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitIndex_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Index_nameContext* SQLiteParser::index_name() {
   Index_nameContext *_localctx = _tracker.createInstance<Index_nameContext>(_ctx, getState());
   enterRule(_localctx, 196, SQLiteParser::RuleIndex_name);
@@ -15477,6 +16270,14 @@ void SQLiteParser::Trigger_nameContext::exitRule(tree::ParseTreeListener *listen
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitTrigger_name(this);
+}
+
+
+std::any SQLiteParser::Trigger_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTrigger_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Trigger_nameContext* SQLiteParser::trigger_name() {
@@ -15532,6 +16333,14 @@ void SQLiteParser::View_nameContext::exitRule(tree::ParseTreeListener *listener)
     parserListener->exitView_name(this);
 }
 
+
+std::any SQLiteParser::View_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitView_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::View_nameContext* SQLiteParser::view_name() {
   View_nameContext *_localctx = _tracker.createInstance<View_nameContext>(_ctx, getState());
   enterRule(_localctx, 200, SQLiteParser::RuleView_name);
@@ -15583,6 +16392,14 @@ void SQLiteParser::Module_nameContext::exitRule(tree::ParseTreeListener *listene
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitModule_name(this);
+}
+
+
+std::any SQLiteParser::Module_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitModule_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Module_nameContext* SQLiteParser::module_name() {
@@ -15638,6 +16455,14 @@ void SQLiteParser::Pragma_nameContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitPragma_name(this);
 }
 
+
+std::any SQLiteParser::Pragma_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitPragma_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Pragma_nameContext* SQLiteParser::pragma_name() {
   Pragma_nameContext *_localctx = _tracker.createInstance<Pragma_nameContext>(_ctx, getState());
   enterRule(_localctx, 204, SQLiteParser::RulePragma_name);
@@ -15689,6 +16514,14 @@ void SQLiteParser::Savepoint_nameContext::exitRule(tree::ParseTreeListener *list
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitSavepoint_name(this);
+}
+
+
+std::any SQLiteParser::Savepoint_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitSavepoint_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Savepoint_nameContext* SQLiteParser::savepoint_name() {
@@ -15744,6 +16577,14 @@ void SQLiteParser::Table_aliasContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitTable_alias(this);
 }
 
+
+std::any SQLiteParser::Table_aliasContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_alias(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Table_aliasContext* SQLiteParser::table_alias() {
   Table_aliasContext *_localctx = _tracker.createInstance<Table_aliasContext>(_ctx, getState());
   enterRule(_localctx, 208, SQLiteParser::RuleTable_alias);
@@ -15795,6 +16636,14 @@ void SQLiteParser::Table_alias_excluding_joinsContext::exitRule(tree::ParseTreeL
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitTable_alias_excluding_joins(this);
+}
+
+
+std::any SQLiteParser::Table_alias_excluding_joinsContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_alias_excluding_joins(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Table_alias_excluding_joinsContext* SQLiteParser::table_alias_excluding_joins() {
@@ -15850,6 +16699,14 @@ void SQLiteParser::Window_nameContext::exitRule(tree::ParseTreeListener *listene
     parserListener->exitWindow_name(this);
 }
 
+
+std::any SQLiteParser::Window_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitWindow_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Window_nameContext* SQLiteParser::window_name() {
   Window_nameContext *_localctx = _tracker.createInstance<Window_nameContext>(_ctx, getState());
   enterRule(_localctx, 212, SQLiteParser::RuleWindow_name);
@@ -15901,6 +16758,14 @@ void SQLiteParser::AliasContext::exitRule(tree::ParseTreeListener *listener) {
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitAlias(this);
+}
+
+
+std::any SQLiteParser::AliasContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAlias(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::AliasContext* SQLiteParser::alias() {
@@ -15956,6 +16821,14 @@ void SQLiteParser::Base_window_nameContext::exitRule(tree::ParseTreeListener *li
     parserListener->exitBase_window_name(this);
 }
 
+
+std::any SQLiteParser::Base_window_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitBase_window_name(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Base_window_nameContext* SQLiteParser::base_window_name() {
   Base_window_nameContext *_localctx = _tracker.createInstance<Base_window_nameContext>(_ctx, getState());
   enterRule(_localctx, 216, SQLiteParser::RuleBase_window_name);
@@ -16007,6 +16880,14 @@ void SQLiteParser::Table_function_nameContext::exitRule(tree::ParseTreeListener 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitTable_function_name(this);
+}
+
+
+std::any SQLiteParser::Table_function_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitTable_function_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Table_function_nameContext* SQLiteParser::table_function_name() {
@@ -16072,6 +16953,14 @@ void SQLiteParser::Any_name_excluding_raiseContext::exitRule(tree::ParseTreeList
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitAny_name_excluding_raise(this);
+}
+
+
+std::any SQLiteParser::Any_name_excluding_raiseContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAny_name_excluding_raise(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Any_name_excluding_raiseContext* SQLiteParser::any_name_excluding_raise() {
@@ -16262,6 +17151,14 @@ void SQLiteParser::Any_name_excluding_joinsContext::exitRule(tree::ParseTreeList
     parserListener->exitAny_name_excluding_joins(this);
 }
 
+
+std::any SQLiteParser::Any_name_excluding_joinsContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAny_name_excluding_joins(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Any_name_excluding_joinsContext* SQLiteParser::any_name_excluding_joins() {
   Any_name_excluding_joinsContext *_localctx = _tracker.createInstance<Any_name_excluding_joinsContext>(_ctx, getState());
   enterRule(_localctx, 222, SQLiteParser::RuleAny_name_excluding_joins);
@@ -16435,6 +17332,14 @@ void SQLiteParser::Any_name_excluding_stringContext::exitRule(tree::ParseTreeLis
     parserListener->exitAny_name_excluding_string(this);
 }
 
+
+std::any SQLiteParser::Any_name_excluding_stringContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAny_name_excluding_string(this);
+  else
+    return visitor->visitChildren(this);
+}
+
 SQLiteParser::Any_name_excluding_stringContext* SQLiteParser::any_name_excluding_string() {
   Any_name_excluding_stringContext *_localctx = _tracker.createInstance<Any_name_excluding_stringContext>(_ctx, getState());
   enterRule(_localctx, 224, SQLiteParser::RuleAny_name_excluding_string);
@@ -16605,6 +17510,14 @@ void SQLiteParser::Any_nameContext::exitRule(tree::ParseTreeListener *listener) 
   auto parserListener = dynamic_cast<SQLiteParserListener *>(listener);
   if (parserListener != nullptr)
     parserListener->exitAny_name(this);
+}
+
+
+std::any SQLiteParser::Any_nameContext::accept(tree::ParseTreeVisitor *visitor) {
+  if (auto parserVisitor = dynamic_cast<SQLiteParserVisitor*>(visitor))
+    return parserVisitor->visitAny_name(this);
+  else
+    return visitor->visitChildren(this);
 }
 
 SQLiteParser::Any_nameContext* SQLiteParser::any_name() {

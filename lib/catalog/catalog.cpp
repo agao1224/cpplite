@@ -4,6 +4,7 @@
 
 #include "btree/btree.h"
 #include "catalog/catalog.h"
+#include "catalog/schema.h"
 
 static PageNumber ensure_schema_page(Pager *pager) {
   if (pager->get_num_pages() < CPPLITE_SCHEMA_PGNO) {
@@ -20,15 +21,16 @@ void CatalogManager::initialize_tables() {
   do {
     DefaultPagerKey oid = schema_cursor_.current_key();
     std::vector<std::byte> table_bytes = schema_cursor_.current_value();
-    Table table = deserialize_table(table_bytes);
+    auto [table, root_pgno] = deserialize_table(table_bytes);
     tables_[table.name] = table;
     table_oids_[table.name] = oid;
+    table_root_pages_[table.name] = root_pgno;
     table_dependencies_[table.tbl_name].push_back(table.name);
   } while (schema_cursor_.next());
 }
 
 CatalogManager::CatalogManager(Pager *pager)
-    : schema_cursor_(pager, ensure_schema_page(pager)) {
+    : pager_(pager), schema_cursor_(pager, ensure_schema_page(pager)) {
   assert(pager != nullptr);
   fpm_ = FirstPageManager(pager->db_file_ptr_);
   next_oid_ = fpm_.next_oid_;
@@ -37,10 +39,12 @@ CatalogManager::CatalogManager(Pager *pager)
 
 CatalogManager::~CatalogManager() {}
 
-void CatalogManager::create_table(Table table) {
-  std::vector<std::byte> payload = serialize_table(table);
+void CatalogManager::create_table(schema::Table table) {
+  PageNumber root_pgno = pager_->create_page(PAGER_LEAF_PAGE);
+  std::vector<std::byte> payload = serialize_table(table, root_pgno);
   schema_cursor_.insert(next_oid_, payload);
   table_oids_[table.name] = next_oid_;
+  table_root_pages_[table.name] = root_pgno;
   next_oid_++;
   fpm_.set_next_oid(next_oid_);
   tables_[table.name] = table;
@@ -51,7 +55,7 @@ void CatalogManager::drop_table(std::string name) {
   if (tables_.find(name) == tables_.end())
     return;
 
-  Table table = tables_[name];
+  schema::Table table = tables_[name];
   tables_.erase(name);
   schema_cursor_.move_to_key(table_oids_[name]);
   table_oids_.erase(name);
@@ -65,7 +69,7 @@ void CatalogManager::drop_table(std::string name) {
   return;
 }
 
-std::optional<Table> CatalogManager::get_table(std::string name) {
+std::optional<schema::Table> CatalogManager::get_table(std::string name) {
   auto it = tables_.find(name);
   if (it == tables_.end())
     return std::nullopt;

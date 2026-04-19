@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 #include <vector>
 
 #include "catalog/catalog.h"
@@ -54,7 +55,8 @@ uint64_t read_uint64(const std::vector<std::byte> &buffer, size_t &offset) {
   return val;
 }
 
-std::vector<std::byte> CatalogManager::serialize_table(Table table) {
+std::vector<std::byte> CatalogManager::serialize_table(schema::Table table,
+                                                       PageNumber root_pgno) {
   std::vector<std::byte> serialized;
 
   serialized.push_back(static_cast<std::byte>(table.type));
@@ -69,11 +71,11 @@ std::vector<std::byte> CatalogManager::serialize_table(Table table) {
   for (uint16_t i = 0; i < tbl_name_len; i++)
     serialized.push_back(static_cast<std::byte>(table.tbl_name[i]));
 
-  append_uint64(serialized, (uint64_t)table.root_pgno);
+  append_uint64(serialized, (uint64_t)root_pgno);
   uint16_t num_cols = table.columns.size();
   append_uint16(serialized, num_cols);
   for (uint16_t i = 0; i < num_cols; i++) {
-    Column col = table.columns[i];
+    schema::Column col = table.columns[i];
     serialized.push_back(static_cast<std::byte>(col.type));
 
     uint16_t col_name_len = col.name.size();
@@ -87,11 +89,12 @@ std::vector<std::byte> CatalogManager::serialize_table(Table table) {
   return serialized;
 }
 
-Table CatalogManager::deserialize_table(std::vector<std::byte> &payload) {
-  Table table;
+std::pair<schema::Table, PageNumber>
+CatalogManager::deserialize_table(std::vector<std::byte> &payload) {
+  schema::Table table;
   size_t offset = 0;
 
-  table.type = static_cast<SchemaType>(payload[offset]);
+  table.type = static_cast<schema::SchemaType>(payload[offset]);
   offset++;
 
   uint16_t name_len = read_uint16(payload, offset);
@@ -106,13 +109,12 @@ Table CatalogManager::deserialize_table(std::vector<std::byte> &payload) {
   table.tbl_name = tbl_name;
   offset += tbl_name_len;
 
-  uint64_t root_pgno = read_uint64(payload, offset);
-  table.root_pgno = (PageNumber)root_pgno;
+  PageNumber root_pgno = (PageNumber)read_uint64(payload, offset);
 
   uint16_t num_cols = read_uint16(payload, offset);
   for (uint16_t i = 0; i < num_cols; i++) {
-    Column col;
-    col.type = static_cast<DataType>(payload[offset]);
+    schema::Column col;
+    col.type = static_cast<schema::DataType>(payload[offset]);
     offset++;
 
     uint16_t col_name_len = read_uint16(payload, offset);
@@ -129,5 +131,5 @@ Table CatalogManager::deserialize_table(std::vector<std::byte> &payload) {
     table.columns.push_back(col);
   }
   assert(payload.size() == offset);
-  return table;
+  return {table, root_pgno};
 }
