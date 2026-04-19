@@ -1,25 +1,26 @@
 #include <string>
 #include <vector>
-#include "shared.h"
+
+#include "pager/base_page.h"
 
 #pragma once
 
-enum class DataType {
-  INT,
-  TEXT,
-  BOOLEAN
-};
+enum DataType { INTEGER = 0x01, BOOLEAN = 0x02, TEXT = 0x03 };
+
+enum SchemaType { TABLE = 0x01 };
 
 struct Column {
-  std::string name;
   DataType type;
-  uint32_t length;
-  bool is_nullabe;
+  std::string name;
   bool is_primary_key;
+  bool is_nullable;
 };
 
 struct Table {
+  DefaultPagerKey oid;
+  SchemaType type;
   std::string name;
+  std::string tbl_name;
   PageNumber root_pgno;
   std::vector<Column> columns;
 };

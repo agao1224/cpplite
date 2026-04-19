@@ -28,6 +28,7 @@ TEST_F(PagerTest, InitPager) {
   ASSERT_EQ(first_page_header.page_type, PAGER_FIRST_PAGE);
   ASSERT_EQ(first_page_header.checksum, CHECKSUM);
   ASSERT_EQ(first_page_header.num_pages, 1);
+  ASSERT_EQ(first_page_header.next_oid, DefaultPagerKey(1));
 }
 
 TEST_F(PagerTest, NodePageBasic) {

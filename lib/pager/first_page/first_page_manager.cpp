@@ -30,6 +30,7 @@ FirstPageManager::FirstPageManager(std::shared_ptr<OsFile> db_file_ptr) {
     page_type_ = first_page_header.page_type;
     num_pages_ = first_page_header.num_pages;
     free_page_head_ = first_page_header.free_page_head;
+    next_oid_ = first_page_header.next_oid;
     pgno_ = 1;
 
     data_.resize(num_payload_bytes);
@@ -88,6 +89,29 @@ void FirstPageManager::set_free_page_head(PageNumber pgno) {
 
 PageNumber FirstPageManager::get_free_page_head() {
   return free_page_head_; 
+}
+
+DefaultPagerKey FirstPageManager::get_next_oid() {
+  return next_oid_;
+}
+
+void FirstPageManager::set_next_oid(DefaultPagerKey oid) {
+  assert(db_file_ptr_ != nullptr);
+
+  next_oid_ = oid;
+
+  OsFile db_file = *db_file_ptr_;
+  db_file.os_open();
+  off_t next_oid_offset = offsetof(PagerFirstPageHeader_t, next_oid);
+  std::vector<std::byte> buffer(sizeof(DefaultPagerKey));
+  std::memcpy(buffer.data(), &oid, sizeof(DefaultPagerKey));
+  bool seek_ok = db_file.os_seek(next_oid_offset);
+  if (!seek_ok)
+    throw std::runtime_error("[FirstPageManager]: Failed to seek set_next_oid");
+  bool write_ok = db_file.os_write(buffer, sizeof(DefaultPagerKey));
+  if (!write_ok)
+    throw std::runtime_error("[FirstPageManager]: Failed to write set_next_oid");
+  db_file.os_close();
 }
 
 PageNumber FirstPageManager::create_free_page() {
