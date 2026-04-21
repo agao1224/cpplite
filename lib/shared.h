@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <vector>
 
 #pragma once
 
@@ -37,10 +38,10 @@ template <typename T> struct PagerKey {
 
   std::vector<std::byte> to_bytes() const {
     return {
-      static_cast<std::byte>((value >> 24) & 0xFF),
-      static_cast<std::byte>((value >> 16) & 0xFF),
-      static_cast<std::byte>((value >> 8)  & 0xFF),
-      static_cast<std::byte>((value)       & 0xFF),
+        static_cast<std::byte>((value >> 24) & 0xFF),
+        static_cast<std::byte>((value >> 16) & 0xFF),
+        static_cast<std::byte>((value >> 8) & 0xFF),
+        static_cast<std::byte>((value) & 0xFF),
     };
   }
 };

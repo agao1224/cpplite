@@ -283,8 +283,6 @@ TEST_F(RecordManagerTest, DeserializeNulls) {
   encoding::append_uint32(buffer, static_cast<uint32_t>(text.size()));
   encoding::append_str(buffer, text);
 
-  // id is null, no bytes written
-
   bool flag = true;
   encoding::append_bool(buffer, flag);
 
