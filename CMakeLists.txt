@@ -56,6 +56,7 @@ target_link_libraries(parser PUBLIC antlr4_static)
 
 add_library(vfs STATIC
   lib/vfs/osfile.cpp
+  lib/vfs/localfs.cpp
 )
 target_include_directories(vfs PUBLIC lib/vfs)
 
