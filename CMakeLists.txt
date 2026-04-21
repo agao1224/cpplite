@@ -77,18 +77,21 @@ add_library(btree STATIC
 target_include_directories(btree PUBLIC lib/btree)
 target_link_libraries(btree PUBLIC pager)
 
+add_library(encoding STATIC
+  lib/encoding.cpp
+)
+
 add_library(catalog STATIC
   lib/catalog/catalog.cpp
-  lib/catalog/serialize.cpp
 )
 target_include_directories(catalog PUBLIC lib/catalog)
-target_link_libraries(catalog PUBLIC btree)
+target_link_libraries(catalog PUBLIC btree encoding)
 
 add_library(record STATIC
   lib/record/record.cpp
 )
 target_include_directories(record PUBLIC lib/record)
-target_link_libraries(record PUBLIC catalog)
+target_link_libraries(record PUBLIC catalog encoding)
 
 add_library(binder STATIC
   lib/binder/binder.cpp
@@ -126,7 +129,7 @@ add_executable(record_tests
   tests/test_main.cpp
   ${RECORD_TEST_SOURCES}
 )
-target_link_libraries(record_tests PRIVATE test_utils record GTest::gtest)
+target_link_libraries(record_tests PRIVATE test_utils record encoding GTest::gtest)
 
 add_executable(vfs_tests
   tests/test_main.cpp
