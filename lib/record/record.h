@@ -32,6 +32,15 @@ struct Row {
   std::vector<Value> values;
 };
 
+struct ValueSerializer {
+  std::vector<std::byte> &buf;
+
+  void operator()(record::Null);
+  void operator()(record::Integer v);
+  void operator()(record::Bool v);
+  void operator()(const record::Text &v);
+};
+
 } // namespace record
 
 /**

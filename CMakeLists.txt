@@ -84,6 +84,12 @@ add_library(catalog STATIC
 target_include_directories(catalog PUBLIC lib/catalog)
 target_link_libraries(catalog PUBLIC btree)
 
+add_library(record STATIC
+  lib/record/record.cpp
+)
+target_include_directories(record PUBLIC lib/record)
+target_link_libraries(record PUBLIC catalog)
+
 add_library(binder STATIC
   lib/binder/binder.cpp
 )
@@ -108,12 +114,19 @@ target_link_libraries(test_utils PUBLIC GTest::gtest)
 
 enable_testing()
 
+file(GLOB RECORD_TEST_SOURCES   tests/record/*.cpp)
 file(GLOB VFS_TEST_SOURCES      tests/vfs/*.cpp)
 file(GLOB PAGER_TEST_SOURCES    tests/pager/*.cpp)
 file(GLOB_RECURSE BTREE_TEST_SOURCES   tests/btree/*.cpp)
 file(GLOB CATALOG_TEST_SOURCES  tests/catalog/*.cpp)
 file(GLOB BINDER_TEST_SOURCES   tests/binder/*.cpp)
 file(GLOB EXECUTOR_TEST_SOURCES tests/executor/*.cpp)
+
+add_executable(record_tests
+  tests/test_main.cpp
+  ${RECORD_TEST_SOURCES}
+)
+target_link_libraries(record_tests PRIVATE test_utils record GTest::gtest)
 
 add_executable(vfs_tests
   tests/test_main.cpp
@@ -164,6 +177,7 @@ target_link_libraries(executor_tests PRIVATE test_utils executor GTest::gtest)
 # ── Test discovery ────────────────────────────────────────────────────────────
 
 include(GoogleTest)
+gtest_discover_tests(record_tests)
 gtest_discover_tests(vfs_tests)
 gtest_discover_tests(pager_tests)
 gtest_discover_tests(btree_tests)
