@@ -1,8 +1,8 @@
 #pragma once
 
 #include "encoding.h"
+#include "filecache.h"
 #include "shared.h"
-#include "storage/storage_utils.h"
 #include "vfs/vfs.h"
 #include <cstdint>
 #include <map>
@@ -26,11 +26,37 @@ struct EngineConfig {
 struct Control {
   uint32_t checksum;
   PageKey catalog_key;
+
+  static constexpr size_t SIZE = sizeof(uint32_t) + 2 * sizeof(uint64_t);
+
+  const std::vector<std::byte> to_bytes() const {
+    std::vector<std::byte> buffer;
+    encoding::append_uint32(buffer, checksum);
+    encoding::append_uint64(buffer, static_cast<uint64_t>(catalog_key.first));
+    encoding::append_uint64(buffer, static_cast<uint64_t>(catalog_key.second));
+    return buffer;
+  }
+
+  Control() = default;
+
+  Control(uint32_t checksum_, PageKey catalog_key_)
+      : checksum(checksum_), catalog_key(catalog_key_) {}
+
+  Control(std::vector<std::byte> &buffer, size_t &offset) {
+    checksum = encoding::read_uint32(buffer, offset);
+    TableID tbl_id =
+        static_cast<TableID>(encoding::read_uint64(buffer, offset));
+    PageNumber pgno =
+        static_cast<PageNumber>(encoding::read_uint64(buffer, offset));
+    catalog_key = std::make_pair(tbl_id, pgno);
+  }
 };
 
 struct TableMetadata {
   PageNumber last_pgno;
   PageNumber total_pages;
+
+  static constexpr size_t SIZE = sizeof(PageNumber) + sizeof(PageNumber);
 
   const std::vector<std::byte> to_bytes() const {
     std::vector<std::byte> buffer;
@@ -38,6 +64,8 @@ struct TableMetadata {
     encoding::append_uint64(buffer, total_pages);
     return buffer;
   }
+
+  TableMetadata() = default;
 
   TableMetadata(PageNumber last_pgno_, PageNumber total_pages_)
       : last_pgno(last_pgno_), total_pages(total_pages_) {}
@@ -57,15 +85,20 @@ private:
   storage::EngineConfig config_;
   storage::Control control_;
   std::map<TableID, storage::TableMetadata> table_metadata_;
+  storage::FileCache filecache_;
 
   PageNumber get_latest_page(TableID tbl_id);
 
   void init_control();
   void init_table_metadata();
-  void write_table_metadata();
+  VirtualFile *open_segment(TableID tbl_id, storage::SegmentID seg_id);
+  VirtualFile *get_segment(TableID tbl_id, PageNumber pgno);
+
+  StorageEngine(const std::string &basepath, const storage::EngineConfig = {});
 
 public:
-  StorageEngine(const std::string &basepath);
+  static StorageEngine open(const std::string &basepath,
+                            const storage::EngineConfig config = {});
 
   void read_page(PageKey pgkey, std::vector<std::byte> &buffer);
   void write_page(PageKey pgkey, std::vector<std::byte> &buffer);

@@ -54,7 +54,7 @@ std::vector<std::string> LocalFS::ls(const std::string &dir) {
   std::string path = basedir_ + "/" + dir;
   std::vector<std::string> entries;
   for (const auto &entry : std::filesystem::directory_iterator(path))
-    entries.push_back(entry.path().string());
+    entries.push_back(std::filesystem::relative(entry.path(), basedir_).string());
   return entries;
 }
 

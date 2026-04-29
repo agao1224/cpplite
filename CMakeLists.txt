@@ -106,6 +106,13 @@ add_library(executor STATIC
 target_include_directories(executor PUBLIC lib/executor)
 target_link_libraries(executor PUBLIC binder)
 
+add_library(storage STATIC
+  lib/storage/storage.cpp
+  lib/storage/filecache.cpp
+)
+target_include_directories(storage PUBLIC lib/storage)
+target_link_libraries(storage PUBLIC vfs encoding)
+
 # ── Shared test utilities ─────────────────────────────────────────────────────
 
 add_library(test_utils STATIC
@@ -125,6 +132,7 @@ file(GLOB_RECURSE BTREE_TEST_SOURCES   tests/btree/*.cpp)
 file(GLOB CATALOG_TEST_SOURCES  tests/catalog/*.cpp)
 file(GLOB BINDER_TEST_SOURCES   tests/binder/*.cpp)
 file(GLOB EXECUTOR_TEST_SOURCES tests/executor/*.cpp)
+file(GLOB STORAGE_TEST_SOURCES tests/storage/*.cpp)
 
 add_executable(record_tests
   tests/test_main.cpp
@@ -156,9 +164,7 @@ target_link_libraries(btree_tests PRIVATE test_utils btree GTest::gtest yaml-cpp
 add_custom_command(TARGET btree_tests POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/tests/btree/configs
-    ${CMAKE_BINARY_DIR}/tests/btree/configs
-)
-
+    ${CMAKE_BINARY_DIR}/tests/btree/)
 add_executable(catalog_tests
   tests/test_main.cpp
   ${CATALOG_TEST_SOURCES}
@@ -178,6 +184,12 @@ add_executable(executor_tests
 )
 target_link_libraries(executor_tests PRIVATE test_utils executor GTest::gtest)
 
+add_executable(storage_tests
+  tests/test_main.cpp
+  ${STORAGE_TEST_SOURCES}
+)
+target_link_libraries(storage_tests PRIVATE test_utils storage GTest::gtest)
+
 # ── Test discovery ────────────────────────────────────────────────────────────
 
 include(GoogleTest)
@@ -188,3 +200,4 @@ gtest_discover_tests(btree_tests)
 gtest_discover_tests(catalog_tests)
 gtest_discover_tests(binder_tests)
 gtest_discover_tests(executor_tests)
+gtest_discover_tests(storage_tests)
