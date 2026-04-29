@@ -8,6 +8,18 @@
 
 #include "test_utils.h"
 
+std::string generate_random_dirname() {
+  std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
+  const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  std::uniform_int_distribution<int> length_dist(10, 15);
+  int random_length = length_dist(rng);
+  std::string random_string;
+  std::uniform_int_distribution<int> char_dist(0, characters.length() - 1);
+  for (int i = 0; i < random_length; ++i)
+    random_string += characters[char_dist(rng)];
+  return "tmp_" + random_string;
+}
+
 std::string generate_random_filename() {
   std::mt19937 rng(std::chrono::system_clock::now().time_since_epoch().count());
 

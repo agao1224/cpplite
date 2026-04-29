@@ -35,10 +35,10 @@ TEST_F(LocalFSTest, WriteAndRead) {
   auto file = fs->open("test.db", O_RDWR);
 
   std::vector<std::byte> payload = generate_random_payload(SMALL);
-  file->write(payload, 0);
+  file->write(&payload, payload.size(), 0);
 
   std::vector<std::byte> buf(SMALL);
-  file->read(buf, 0);
+  file->read(buf, buf.size(), 0);
 
   ASSERT_EQ(buf, payload);
 }
@@ -47,12 +47,12 @@ TEST_F(LocalFSTest, WriteAndReadAtOffset) {
   auto file = fs->open("test.db", O_RDWR);
 
   std::vector<std::byte> payload = generate_random_payload(LARGE);
-  file->write(payload, 0);
+  file->write(&payload, payload.size(), 0);
 
   off_t offset = 64;
   size_t length = 128;
   std::vector<std::byte> buf(length);
-  file->read(buf, offset);
+  file->read(buf, length, offset);
 
   ASSERT_TRUE(std::equal(buf.begin(), buf.end(), payload.begin() + offset));
 }
@@ -63,21 +63,21 @@ TEST_F(LocalFSTest, MultipleWrites) {
   std::vector<std::byte> first = generate_random_payload(SMALL);
   std::vector<std::byte> second = generate_random_payload(SMALL);
 
-  file->write(first, 0);
-  file->write(second, SMALL);
+  file->write(&first, first.size(), 0);
+  file->write(&second, second.size(), SMALL);
 
   std::vector<std::byte> buf(SMALL);
-  file->read(buf, 0);
+  file->read(buf, buf.size(), 0);
   ASSERT_EQ(buf, first);
 
-  file->read(buf, SMALL);
+  file->read(buf, SMALL, SMALL);
   ASSERT_EQ(buf, second);
 }
 
 TEST_F(LocalFSTest, SyncDoesNotThrow) {
   auto file = fs->open("test.db", O_RDWR);
   std::vector<std::byte> payload = generate_random_payload(SMALL);
-  file->write(payload, 0);
+  file->write(&payload, payload.size(), 0);
   ASSERT_NO_THROW(file->sync());
 }
 
@@ -86,13 +86,13 @@ TEST_F(LocalFSTest, CloseAndReopenPreservesData) {
 
   {
     auto file = fs->open("test.db", O_RDWR);
-    file->write(payload, 0);
+    file->write(&payload, payload.size(), 0);
     file->close();
   }
 
   auto file = fs->open("test.db", O_RDWR);
   std::vector<std::byte> buf(SMALL);
-  file->read(buf, 0);
+  file->read(buf, buf.size(), 0);
   ASSERT_EQ(buf, payload);
 }
 
