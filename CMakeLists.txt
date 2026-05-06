@@ -69,6 +69,8 @@ add_library(pager STATIC
   lib/pager/overflow_page/overflow_page_manager.cpp
   lib/pager/bufferpool/lruk.cpp
   lib/pager/bufferpool/frameheader.cpp
+  lib/pager/bufferpool/bufferpool.cpp
+  lib/pager/bufferpool/pageguard.cpp
 )
 target_include_directories(pager PUBLIC lib/pager)
 target_link_libraries(pager PUBLIC vfs storage)

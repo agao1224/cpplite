@@ -72,6 +72,27 @@ void pager::ReadPageGuard::flush() {
   return;
 }
 
+void pager::ReadPageGuard::drop() {
+  assert(frame_ != nullptr);
+  assert(bpm_latch_ != nullptr);
+
+  if (!is_valid)
+    return;
+
+  is_valid = false;
+  bpm_latch_->lock();
+
+  // NOTE(andrew): fetch_sub from std::atomic returns the value BEFORE the
+  // update, so checking prev value = 1 is equivalent to checking current value
+  // = 0
+  size_t prev_num_pins = frame_->decr_pins();
+  if (prev_num_pins == 1)
+    evictor_->set_evictable(frame_->get_frame_id(), true);
+
+  bpm_latch_->unlock();
+  frame_->unlock_read();
+}
+
 pager::WritePageGuard::WritePageGuard(
     PageKey pgkey, std::shared_ptr<pager::FrameHeader> frame,
     std::shared_ptr<pager::Evictor> evictor,
@@ -155,25 +176,4 @@ void pager::WritePageGuard::drop() {
 
   bpm_latch_->unlock();
   frame_->unlock_write();
-}
-
-void pager::ReadPageGuard::drop() {
-  assert(frame_ != nullptr);
-  assert(bpm_latch_ != nullptr);
-
-  if (!is_valid)
-    return;
-
-  is_valid = false;
-  bpm_latch_->lock();
-
-  // NOTE(andrew): fetch_sub from std::atomic returns the value BEFORE the
-  // update, so checking prev value = 1 is equivalent to checking current value
-  // = 0
-  size_t prev_num_pins = frame_->decr_pins();
-  if (prev_num_pins == 1)
-    evictor_->set_evictable(frame_->get_frame_id(), true);
-
-  bpm_latch_->unlock();
-  frame_->unlock_read();
 }
